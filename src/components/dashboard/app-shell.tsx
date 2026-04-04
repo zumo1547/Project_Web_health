@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/ui/logout-button";
 import { roleLabels } from "@/lib/permissions";
+import Image from "next/image";
 import type { Session } from "next-auth";
 import Link from "next/link";
 
@@ -101,8 +102,21 @@ export function AppShell({
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                <Link href="/" className="text-xl font-black tracking-tight">
-                  Senior Health Check
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-3 rounded-[1.2rem] px-1 py-1 text-xl font-black tracking-tight transition hover:opacity-90"
+                >
+                  <span className="flex h-11 w-11 items-center justify-center rounded-[1rem] bg-white/90 shadow-[0_18px_36px_-24px_rgba(15,23,42,0.45)] ring-1 ring-black/5 sm:h-12 sm:w-12">
+                    <Image
+                      src="/icon.png"
+                      alt="Senior Health Check logo"
+                      width={36}
+                      height={36}
+                      className="h-8 w-8 object-contain sm:h-9 sm:w-9"
+                      priority
+                    />
+                  </span>
+                  <span>Senior Health Check</span>
                 </Link>
                 <Badge tone={styles.badgeTone}>{styles.eyebrow}</Badge>
                 <Badge tone={portal === "doctor" ? "slate" : "amber"}>
