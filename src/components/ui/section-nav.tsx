@@ -39,22 +39,22 @@ export function SectionNav({
 
   return (
     <nav
-      className={`sticky top-3 z-30 mt-8 overflow-hidden rounded-[1.9rem] border px-3 py-3 backdrop-blur sm:px-4 ${toneStyles[tone]}`}
+      className={`sticky top-3 z-30 mt-6 overflow-hidden rounded-[1.9rem] border px-2.5 py-2.5 backdrop-blur sm:mt-8 sm:px-4 sm:py-3 ${toneStyles[tone]}`}
       aria-label="Section navigation"
     >
-      <div className="flex gap-3 overflow-x-auto pb-1">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:pb-1">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`min-w-[11rem] shrink-0 rounded-[1.35rem] border px-4 py-3 transition ${linkToneStyles[tone]}`}
+            className={`min-w-0 rounded-[1.2rem] border px-3 py-3 transition sm:min-w-[11rem] sm:shrink-0 sm:rounded-[1.35rem] sm:px-4 ${linkToneStyles[tone]}`}
           >
             {item.eyebrow ? (
-              <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] opacity-70">
+              <p className="text-[0.62rem] font-bold uppercase tracking-[0.18em] opacity-70 sm:text-[0.68rem]">
                 {item.eyebrow}
               </p>
             ) : null}
-            <p className="mt-1 text-sm font-bold sm:text-base">{item.label}</p>
+            <p className="mt-1 text-sm font-bold leading-6 sm:text-base">{item.label}</p>
           </Link>
         ))}
       </div>

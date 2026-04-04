@@ -21,7 +21,7 @@ function FloatingIcon({ icon }: { icon: FloatingSupportItem["icon"] }) {
       <svg
         viewBox="0 0 24 24"
         aria-hidden="true"
-        className="h-5 w-5"
+        className="h-4 w-4 sm:h-5 sm:w-5"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"
@@ -39,7 +39,7 @@ function FloatingIcon({ icon }: { icon: FloatingSupportItem["icon"] }) {
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="h-5 w-5"
+      className="h-4 w-4 sm:h-5 sm:w-5"
       fill="none"
       stroke="currentColor"
       strokeWidth="2"
@@ -67,15 +67,15 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-3 sm:bottom-6 sm:right-6">
+      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
         {items.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setActiveId(item.id)}
-            className="group inline-flex items-center gap-3 rounded-full border border-white/80 bg-slate-950 px-4 py-3 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900"
+            className="group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300 sm:h-11 sm:w-11">
               <FloatingIcon icon={item.icon} />
             </span>
             <span className="hidden min-w-0 sm:block">
