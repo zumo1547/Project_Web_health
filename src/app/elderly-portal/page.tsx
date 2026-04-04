@@ -373,12 +373,12 @@ export default async function ElderlyPortalPage() {
         </Card>
       </section>
 
-      <section id="scan" className="mt-6 grid items-start gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+      <section id="scan" className="mt-5 grid gap-5">
         <AiScanForm elderlyId={elderly.id} />
         <MedicineUploadForm elderlyId={elderly.id} />
       </section>
 
-      <section id="blood-pressure" className="mt-6 grid items-start gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+      <section id="blood-pressure" className="mt-5 grid gap-5">
         <BloodPressureForm elderlyId={elderly.id} />
 
         <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
@@ -392,7 +392,7 @@ export default async function ElderlyPortalPage() {
         </Card>
       </section>
 
-      <section id="history" className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_1fr]">
+      <section id="history" className="mt-5 grid gap-5">
         <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
           <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
           <div className="mt-5 space-y-4">

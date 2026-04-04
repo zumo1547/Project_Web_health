@@ -168,7 +168,7 @@ export default async function DoctorPage() {
       actions={
         <Link
           href="#queue"
-          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.35rem] bg-white px-5 py-3 text-base font-bold text-slate-950 transition hover:bg-cyan-50"
+          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.45rem] border border-cyan-300/35 bg-[linear-gradient(135deg,rgba(34,211,238,0.26)_0%,rgba(14,165,233,0.22)_52%,rgba(15,23,42,0.14)_100%)] px-5 py-3 text-base font-bold text-white shadow-[0_20px_38px_-26px_rgba(6,182,212,0.55)] transition hover:-translate-y-0.5 hover:border-cyan-200 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.34)_0%,rgba(14,165,233,0.3)_52%,rgba(15,23,42,0.18)_100%)]"
         >
           เปิดคิวล่าสุด
         </Link>

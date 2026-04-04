@@ -149,7 +149,7 @@ export default async function AdminPage() {
       actions={
         <Link
           href="#case-assignment"
-          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.35rem] bg-amber-600 px-5 py-3 text-base font-bold text-white transition hover:bg-amber-700"
+          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.45rem] border border-amber-300/55 bg-[linear-gradient(135deg,rgba(251,191,36,0.95)_0%,rgba(245,158,11,0.96)_100%)] px-5 py-3 text-base font-bold text-slate-950 shadow-[0_20px_38px_-26px_rgba(217,119,6,0.55)] transition hover:-translate-y-0.5 hover:border-amber-200 hover:bg-[linear-gradient(135deg,rgba(252,211,77,0.98)_0%,rgba(245,158,11,0.98)_100%)]"
         >
           จัดการเคส
         </Link>
