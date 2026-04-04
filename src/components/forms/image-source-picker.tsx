@@ -30,8 +30,10 @@ export function ImageSourcePicker({
 }: ImageSourcePickerProps) {
   const cameraInputId = useId();
   const libraryInputId = useId();
+  const desktopInputId = useId();
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const libraryInputRef = useRef<HTMLInputElement | null>(null);
+  const desktopInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleChange(
     event: ChangeEvent<HTMLInputElement>,
@@ -56,43 +58,52 @@ export function ImageSourcePicker({
       </div>
 
       <div className="rounded-[1.6rem] border border-slate-200 bg-white/95 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-h-[3.35rem]"
-            onClick={() => cameraInputRef.current?.click()}
-          >
-            {cameraLabel}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            className="min-h-[3.35rem] border border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
-            onClick={() => libraryInputRef.current?.click()}
-          >
-            {libraryLabel}
-          </Button>
+        <div className="sm:hidden">
+          <div className="grid gap-3">
+            <label
+              htmlFor={cameraInputId}
+              className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] bg-amber-100 px-5 py-3 text-base font-bold leading-none tracking-tight text-amber-950 shadow-[0_16px_32px_-24px_rgba(217,119,6,0.5)] transition hover:bg-amber-200"
+            >
+              {cameraLabel}
+            </label>
+            <label
+              htmlFor={libraryInputId}
+              className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] border border-slate-200 bg-white px-5 py-3 text-base font-bold leading-none tracking-tight text-slate-800 transition hover:bg-slate-50"
+            >
+              {libraryLabel}
+            </label>
+          </div>
+
+          <input
+            id={cameraInputId}
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="sr-only"
+            onChange={(event) => handleChange(event, cameraInputRef.current)}
+          />
+
+          <input
+            id={libraryInputId}
+            ref={libraryInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => handleChange(event, libraryInputRef.current)}
+          />
         </div>
 
-        <input
-          id={cameraInputId}
-          ref={cameraInputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(event) => handleChange(event, cameraInputRef.current)}
-        />
-
-        <input
-          id={libraryInputId}
-          ref={libraryInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(event) => handleChange(event, libraryInputRef.current)}
-        />
+        <div className="hidden sm:block">
+          <input
+            id={desktopInputId}
+            ref={desktopInputRef}
+            type="file"
+            accept="image/*"
+            className="block w-full rounded-[1.35rem] border border-slate-200 bg-white px-4 py-3 text-base text-slate-900 file:mr-4 file:rounded-full file:border-0 file:bg-slate-950 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-slate-800"
+            onChange={(event) => handleChange(event, desktopInputRef.current)}
+          />
+        </div>
 
         <div className="mt-4 rounded-[1.3rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-4">
           {selectedFileName ? (
@@ -114,7 +125,7 @@ export function ImageSourcePicker({
             </div>
           ) : (
             <p className="text-sm leading-6 text-slate-500">
-              ยังไม่ได้เลือกรูป สามารถถ่ายจากกล้องหรือเลือกรูปเดิมจากคลังได้
+              บนมือถือสามารถถ่ายจากกล้องหรือเลือกรูปเดิมจากคลังได้ ส่วนบนคอมจะเลือกไฟล์จากเครื่อง
             </p>
           )}
         </div>
