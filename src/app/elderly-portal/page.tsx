@@ -148,7 +148,7 @@ export default async function ElderlyPortalPage() {
       actions={
         <Link
           href={`/elderly/${elderly.id}`}
-          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.35rem] bg-emerald-700 px-5 py-3 text-base font-bold text-white transition hover:bg-emerald-800"
+          className="inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_36px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
         >
           เปิดแฟ้มสุขภาพ
         </Link>
@@ -186,7 +186,7 @@ export default async function ElderlyPortalPage() {
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <Link
               href="#scan"
-              className="rounded-[1.7rem] border border-white/70 bg-white/85 px-5 py-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.28)] transition hover:-translate-y-0.5"
+              className="rounded-[1.85rem] border border-white/80 bg-white/88 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
             >
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
                 ขั้นที่ 1
@@ -201,7 +201,7 @@ export default async function ElderlyPortalPage() {
 
             <Link
               href="#blood-pressure"
-              className="rounded-[1.7rem] border border-white/70 bg-white/85 px-5 py-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.28)] transition hover:-translate-y-0.5"
+              className="rounded-[1.85rem] border border-white/80 bg-white/88 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
             >
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
                 ขั้นที่ 2
@@ -216,15 +216,15 @@ export default async function ElderlyPortalPage() {
 
             <Link
               href="#support"
-              className="rounded-[1.7rem] border border-white/70 bg-slate-950 px-5 py-5 text-white shadow-[0_22px_50px_-34px_rgba(15,23,42,0.72)] transition hover:-translate-y-0.5"
+              className="rounded-[1.85rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(15,118,110,0.95)_0%,rgba(5,150,105,0.92)_100%)] px-5 py-5 text-white shadow-[0_24px_52px_-34px_rgba(5,150,105,0.55)] transition duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(13,148,136,0.96)_0%,rgba(5,150,105,0.94)_100%)]"
             >
-              <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-300">
+              <p className="text-sm font-bold uppercase tracking-[0.14em] text-emerald-50">
                 ขั้นที่ 3
               </p>
-              <p className="mt-3 text-xl font-black tracking-tight">
+              <p className="mt-3 text-xl font-black tracking-tight text-white">
                 ขอคำแนะนำต่อ
               </p>
-              <p className="mt-2 text-sm leading-7 text-slate-300">
+              <p className="mt-2 text-sm leading-7 text-emerald-50/90">
                 ใช้ปุ่มลอยมุมขวาล่างเพื่อเปิดแชท AI หรือทักหาคุณหมอได้ทันที
               </p>
             </Link>
@@ -301,7 +301,7 @@ export default async function ElderlyPortalPage() {
         />
       </section>
 
-      <section id="support" className="mt-6 grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+      <section id="support" className="mt-6 grid items-start gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <CaseRequestPanel
           elderlyId={elderly.id}
           caseStatus={elderly.caseStatus}
@@ -373,12 +373,12 @@ export default async function ElderlyPortalPage() {
         </Card>
       </section>
 
-      <section id="scan" className="mt-6 grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+      <section id="scan" className="mt-6 grid items-start gap-6 xl:grid-cols-[1.04fr_0.96fr]">
         <AiScanForm elderlyId={elderly.id} />
         <MedicineUploadForm elderlyId={elderly.id} />
       </section>
 
-      <section id="blood-pressure" className="mt-6 grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
+      <section id="blood-pressure" className="mt-6 grid items-start gap-6 xl:grid-cols-[1.04fr_0.96fr]">
         <BloodPressureForm elderlyId={elderly.id} />
 
         <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
@@ -392,7 +392,7 @@ export default async function ElderlyPortalPage() {
         </Card>
       </section>
 
-      <section id="history" className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
+      <section id="history" className="mt-6 grid items-start gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
           <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
           <div className="mt-5 space-y-4">
@@ -433,7 +433,7 @@ export default async function ElderlyPortalPage() {
           <div className="mt-6 space-y-4">
             <Link
               href={`/elderly/${elderly.id}`}
-              className="inline-flex min-h-[3.35rem] w-full items-center justify-center rounded-[1.35rem] bg-slate-950 px-5 py-3 text-base font-bold text-white transition hover:bg-slate-800"
+              className="inline-flex min-h-[3.5rem] w-full items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
             >
               เปิดแฟ้มสุขภาพเต็ม
             </Link>

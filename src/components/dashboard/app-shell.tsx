@@ -82,6 +82,16 @@ export function AppShell({
   navigation = [],
 }: AppShellProps) {
   const styles = portalStyles[portal];
+  const heroLeadClass =
+    portal === "doctor"
+      ? "border border-white/10 bg-slate-950/72 text-white shadow-[0_28px_60px_-42px_rgba(15,23,42,0.78)]"
+      : portal === "admin"
+        ? "border border-amber-200/70 bg-white/82 shadow-[0_24px_55px_-42px_rgba(120,53,15,0.22)]"
+        : "border border-white/80 bg-white/76 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)]";
+  const heroEyebrowClass =
+    portal === "doctor" ? "text-cyan-100/90" : portal === "admin" ? "text-amber-700" : "text-emerald-700";
+  const heroTitleClass = portal === "doctor" ? "text-white" : "text-slate-950";
+  const heroSubtitleClass = portal === "doctor" ? "text-slate-200" : "text-slate-600";
   const portalSwitchContainerClass =
     portal === "doctor"
       ? "inline-flex flex-wrap items-center gap-2 rounded-[1.4rem] border border-white/10 bg-white/5 p-1.5"
@@ -180,16 +190,16 @@ export function AppShell({
         </header>
 
         <section className="mt-8 grid gap-5 xl:grid-cols-[1.3fr_0.7fr] xl:items-end">
-          <div className="flex flex-col gap-3">
-          <p className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
-            {styles.eyebrow}
-          </p>
-          <h1 className="max-w-4xl text-[2rem] font-black tracking-tight text-slate-950 sm:text-[2.5rem] lg:text-[3rem]">
-            {title}
-          </h1>
-          <p className="max-w-4xl text-base leading-8 text-slate-600 sm:text-lg">
-            {subtitle}
-          </p>
+          <div className={`flex flex-col gap-4 rounded-[2.25rem] p-6 backdrop-blur-sm sm:p-7 lg:p-8 ${heroLeadClass}`}>
+            <p className={`text-sm font-bold uppercase tracking-[0.22em] ${heroEyebrowClass}`}>
+              {styles.eyebrow}
+            </p>
+            <h1 className={`max-w-4xl text-[2rem] font-black tracking-tight sm:text-[2.5rem] lg:text-[3rem] ${heroTitleClass}`}>
+              {title}
+            </h1>
+            <p className={`max-w-4xl text-base leading-8 sm:text-lg ${heroSubtitleClass}`}>
+              {subtitle}
+            </p>
           </div>
 
           <div className="rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm">

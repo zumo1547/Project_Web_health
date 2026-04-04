@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ChangeEvent, useId, useRef, useSyncExternalStore } from "react";
+import { ChangeEvent, useEffect, useId, useRef, useState } from "react";
 
 type ImageSourcePickerProps = {
   label: string;
@@ -13,42 +13,24 @@ type ImageSourcePickerProps = {
   libraryLabel?: string;
 };
 
-const MOBILE_MEDIA_QUERY =
-  "(pointer: coarse), (hover: none), (max-width: 767px)";
+type DeviceMode = "mobile" | "desktop";
 
-function isMobileLikeDevice() {
+function detectDeviceMode(): DeviceMode | null {
   if (typeof window === "undefined") {
-    return false;
+    return null;
   }
 
+  const width = window.innerWidth;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-  const noHover = window.matchMedia("(hover: none)").matches;
-  const narrowViewport = window.matchMedia("(max-width: 767px)").matches;
   const mobileUserAgent =
     typeof navigator !== "undefined" &&
-    /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(
+      navigator.userAgent,
+    );
 
-  return coarsePointer || noHover || narrowViewport || mobileUserAgent;
-}
-
-function subscribeToDeviceType(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => {};
-  }
-
-  const mediaQuery = window.matchMedia(MOBILE_MEDIA_QUERY);
-
-  const listener = () => {
-    onStoreChange();
-  };
-
-  if (typeof mediaQuery.addEventListener === "function") {
-    mediaQuery.addEventListener("change", listener);
-    return () => mediaQuery.removeEventListener("change", listener);
-  }
-
-  mediaQuery.addListener(listener);
-  return () => mediaQuery.removeListener(listener);
+  return width <= 820 || mobileUserAgent || (coarsePointer && width <= 1024)
+    ? "mobile"
+    : "desktop";
 }
 
 function resetInput(input: HTMLInputElement | null) {
@@ -66,11 +48,7 @@ export function ImageSourcePicker({
   cameraLabel = "ถ่ายรูปทันที",
   libraryLabel = "เลือกรูปจากคลัง",
 }: ImageSourcePickerProps) {
-  const isMobile = useSyncExternalStore(
-    subscribeToDeviceType,
-    isMobileLikeDevice,
-    () => false,
-  );
+  const [deviceMode, setDeviceMode] = useState<DeviceMode | null>(null);
 
   const cameraInputId = useId();
   const libraryInputId = useId();
@@ -78,6 +56,21 @@ export function ImageSourcePicker({
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const libraryInputRef = useRef<HTMLInputElement | null>(null);
   const desktopInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const updateDeviceMode = () => {
+      setDeviceMode(detectDeviceMode());
+    };
+
+    updateDeviceMode();
+    window.addEventListener("resize", updateDeviceMode);
+    window.addEventListener("orientationchange", updateDeviceMode);
+
+    return () => {
+      window.removeEventListener("resize", updateDeviceMode);
+      window.removeEventListener("orientationchange", updateDeviceMode);
+    };
+  }, []);
 
   function handleChange(
     event: ChangeEvent<HTMLInputElement>,
@@ -92,6 +85,8 @@ export function ImageSourcePicker({
     resetInput(target);
   }
 
+  const isMobile = deviceMode === "mobile";
+
   return (
     <div className="space-y-3">
       <div className="space-y-1">
@@ -102,7 +97,11 @@ export function ImageSourcePicker({
       </div>
 
       <div className="rounded-[1.6rem] border border-slate-200 bg-white/95 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]">
-        {isMobile ? (
+        {deviceMode === null ? (
+          <div className="flex min-h-[8.5rem] items-center justify-center rounded-[1.35rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-center text-sm leading-6 text-slate-500">
+            กำลังเตรียมตัวเลือกภาพ...
+          </div>
+        ) : isMobile ? (
           <div className="space-y-3">
             <label
               htmlFor={cameraInputId}
@@ -169,8 +168,8 @@ export function ImageSourcePicker({
           ) : (
             <p className="text-sm leading-6 text-slate-500">
               {isMobile
-                ? "บนมือถือสามารถเลือกได้ทั้งถ่ายรูปทันทีหรือเลือกรูปจากคลัง"
-                : "บนคอมสามารถเลือกรูปจากเครื่องได้ทันที"}
+                ? "บนมือถือสามารถเลือกได้ทั้งถ่ายรูปทันทีหรือเลือกรูปเดิมจากคลัง"
+                : "บนคอมเลือกไฟล์รูปจากเครื่องได้ทันที"}
             </p>
           )}
         </div>
