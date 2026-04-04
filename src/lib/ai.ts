@@ -46,6 +46,8 @@ type KnownMedicine = {
   usage: string;
 };
 
+const OCR_TIMEOUT_MS = 8000;
+
 const KNOWN_MEDICINES: KnownMedicine[] = [
   {
     keywords: ["paracetamol", "acetaminophen", "tylenol"],
@@ -149,6 +151,21 @@ function uniqueTextLines(input: string) {
     .join("\n");
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T) {
+  let timeoutHandle: NodeJS.Timeout | undefined;
+
+  return Promise.race([
+    promise.finally(() => {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+    }),
+    new Promise<T>((resolve) => {
+      timeoutHandle = setTimeout(() => resolve(fallback), timeoutMs);
+    }),
+  ]);
+}
+
 async function buildOcrCandidates(imageBuffer: Buffer) {
   const base = sharp(imageBuffer).rotate();
   const metadata = await base.metadata();
@@ -232,6 +249,10 @@ async function recognizeTextFromImage(imageBuffer?: Buffer) {
   }
 }
 
+async function recognizeTextWithFallback(imageBuffer?: Buffer) {
+  return withTimeout(recognizeTextFromImage(imageBuffer), OCR_TIMEOUT_MS, "");
+}
+
 function matchKnownMedicine(sourceText: string) {
   return KNOWN_MEDICINES.find((medicine) =>
     medicine.keywords.some((keyword) => sourceText.includes(keyword)),
@@ -264,7 +285,41 @@ function buildSourceText(input: AnalyzeImageInput, extractedText: string) {
 async function analyzeMedicineImage(
   input: AnalyzeImageInput,
 ): Promise<AnalyzeImageResult> {
-  const extractedText = await recognizeTextFromImage(input.imageBuffer);
+  const fastSourceText = buildSourceText(input, "");
+  const fastMatched = matchKnownMedicine(fastSourceText);
+
+  if (fastMatched) {
+    return {
+      summary: `ระบบคาดว่ายาในภาพคือ ${fastMatched.name} ซึ่ง${fastMatched.usage} กรุณาตรวจชื่อยาและขนาดยาบนฉลากอีกครั้งก่อนใช้จริง`,
+      confidence: input.hintText ? 0.86 : 0.72,
+      extractedText: input.hintText,
+      rawResult: {
+        mode: "fast-hint",
+        imageUrl: input.imageUrl,
+        medicineName: fastMatched.name,
+        usage: fastMatched.usage,
+        extractedText: input.hintText ?? null,
+      },
+    };
+  }
+
+  const fastCandidate = extractMedicineCandidate(fastSourceText);
+  if (fastCandidate) {
+    return {
+      summary: `ระบบอ่านข้อมูลช่วยเพิ่มเติมแล้วคาดว่าอาจเป็นยา "${fastCandidate}" แต่ยังควรถ่ายรูปฉลากให้ชัดขึ้นหรือให้คุณหมอตรวจสอบก่อนใช้`,
+      confidence: input.hintText ? 0.62 : 0.42,
+      extractedText: input.hintText,
+      rawResult: {
+        mode: "fast-hint",
+        imageUrl: input.imageUrl,
+        medicineName: fastCandidate,
+        usage: null,
+        extractedText: input.hintText ?? null,
+      },
+    };
+  }
+
+  const extractedText = await recognizeTextWithFallback(input.imageBuffer);
   const sourceText = buildSourceText(input, extractedText);
   const matched = matchKnownMedicine(sourceText);
 
@@ -375,7 +430,35 @@ function parseBloodPressureFromText(sourceText: string) {
 async function analyzeBloodPressureImage(
   input: AnalyzeImageInput,
 ): Promise<AnalyzeImageResult> {
-  const extractedText = await recognizeTextFromImage(input.imageBuffer);
+  const fastSourceText = [input.fileName, input.hintText ?? ""]
+    .filter(Boolean)
+    .join(" ");
+  const fastValues = parseBloodPressureFromText(fastSourceText);
+
+  if (fastValues) {
+    const assessment = getBloodPressureAssessment(
+      fastValues.systolic,
+      fastValues.diastolic,
+    );
+
+    return {
+      summary: `ระบบอ่านค่าที่กรอกเพิ่มได้ ${fastValues.systolic}/${fastValues.diastolic} mmHg${fastValues.pulse ? ` ชีพจร ${fastValues.pulse} bpm` : ""} อยู่ในระดับ "${assessment.shortLabel}" ${assessment.guidance}`,
+      confidence: input.hintText ? 0.94 : 0.78,
+      extractedText: input.hintText,
+      rawResult: {
+        mode: "fast-hint",
+        imageUrl: input.imageUrl,
+        systolic: fastValues.systolic,
+        diastolic: fastValues.diastolic,
+        pulse: fastValues.pulse,
+        category: assessment.shortLabel,
+        guidance: assessment.guidance,
+        extractedText: input.hintText ?? null,
+      },
+    };
+  }
+
+  const extractedText = await recognizeTextWithFallback(input.imageBuffer);
   const sourceText = [input.fileName, input.hintText ?? "", extractedText]
     .filter(Boolean)
     .join(" ");
