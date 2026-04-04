@@ -58,43 +58,45 @@ export function ImageSourcePicker({
       </div>
 
       <div className="rounded-[1.6rem] border border-slate-200 bg-white/95 p-4 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.45)]">
-        <div className="sm:hidden">
-          <div className="grid gap-3">
-            <label
-              htmlFor={cameraInputId}
-              className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] bg-amber-100 px-5 py-3 text-base font-bold leading-none tracking-tight text-amber-950 shadow-[0_16px_32px_-24px_rgba(217,119,6,0.5)] transition hover:bg-amber-200"
-            >
-              {cameraLabel}
-            </label>
-            <label
-              htmlFor={libraryInputId}
-              className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] border border-slate-200 bg-white px-5 py-3 text-base font-bold leading-none tracking-tight text-slate-800 transition hover:bg-slate-50"
-            >
-              {libraryLabel}
-            </label>
-          </div>
+        <div className="mobile-picker">
+          <>
+            <div className="grid gap-3">
+              <label
+                htmlFor={cameraInputId}
+                className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] bg-amber-100 px-5 py-3 text-base font-bold leading-none tracking-tight text-amber-950 shadow-[0_16px_32px_-24px_rgba(217,119,6,0.5)] transition hover:bg-amber-200"
+              >
+                {cameraLabel}
+              </label>
+              <label
+                htmlFor={libraryInputId}
+                className="inline-flex min-h-[3.35rem] cursor-pointer items-center justify-center rounded-[1.35rem] border border-slate-200 bg-white px-5 py-3 text-base font-bold leading-none tracking-tight text-slate-800 transition hover:bg-slate-50"
+              >
+                {libraryLabel}
+              </label>
+            </div>
 
-          <input
-            id={cameraInputId}
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="sr-only"
-            onChange={(event) => handleChange(event, cameraInputRef.current)}
-          />
+            <input
+              id={cameraInputId}
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="sr-only"
+              onChange={(event) => handleChange(event, cameraInputRef.current)}
+            />
 
-          <input
-            id={libraryInputId}
-            ref={libraryInputRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(event) => handleChange(event, libraryInputRef.current)}
-          />
+            <input
+              id={libraryInputId}
+              ref={libraryInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(event) => handleChange(event, libraryInputRef.current)}
+            />
+          </>
         </div>
 
-        <div className="hidden sm:block">
+        <div className="desktop-picker">
           <input
             id={desktopInputId}
             ref={desktopInputRef}
@@ -130,6 +132,26 @@ export function ImageSourcePicker({
           )}
         </div>
       </div>
+
+      <style jsx>{`
+        .mobile-picker {
+          display: none;
+        }
+
+        .desktop-picker {
+          display: block;
+        }
+
+        @media (pointer: coarse), (hover: none) {
+          .mobile-picker {
+            display: block;
+          }
+
+          .desktop-picker {
+            display: none;
+          }
+        }
+      `}</style>
     </div>
   );
 }
