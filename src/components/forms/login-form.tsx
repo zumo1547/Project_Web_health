@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatSystemDateTime } from "@/lib/date-time";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useId, useState, useTransition } from "react";
@@ -55,10 +56,7 @@ const accentStyles: Record<
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatSystemDateTime(value);
 }
 
 function loadRememberedLogins(portal: LoginPortal) {

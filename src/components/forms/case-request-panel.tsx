@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { formatSystemDateTime } from "@/lib/date-time";
 import { getCaseStatusContent } from "@/lib/health-presenters";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
@@ -18,10 +19,7 @@ type CaseRequestPanelProps = {
 function formatDate(value?: string | null) {
   if (!value) return null;
 
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatSystemDateTime(value);
 }
 
 export function CaseRequestPanel({

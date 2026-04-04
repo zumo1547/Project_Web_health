@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { fetchWithTimeout, readApiResponse } from "@/lib/client-image";
+import { toLocalDateTimeInputValue } from "@/lib/date-time";
 import { getBloodPressureAssessment } from "@/lib/health-presenters";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
@@ -16,6 +18,7 @@ export function BloodPressureForm({ elderlyId }: BloodPressureFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -24,46 +27,55 @@ export function BloodPressureForm({ elderlyId }: BloodPressureFormProps) {
     const formData = new FormData(form);
     const systolic = Number(formData.get("systolic"));
     const diastolic = Number(formData.get("diastolic"));
+    const measuredAtInput = String(formData.get("measuredAt") ?? "");
 
     const payload = {
       systolic,
       diastolic,
       pulse: formData.get("pulse") ? Number(formData.get("pulse")) : undefined,
-      measuredAt: String(formData.get("measuredAt")),
+      measuredAt: measuredAtInput ? new Date(measuredAtInput).toISOString() : "",
       note: String(formData.get("note") ?? ""),
     };
 
     setError("");
     setMessage("");
+    setIsSubmitting(true);
 
-    const response = await fetch(`/api/elderly/${elderlyId}/blood-pressure`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetchWithTimeout(`/api/elderly/${elderlyId}/blood-pressure`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const result = await response.json();
+      const result = await readApiResponse(response);
 
-    if (!response.ok) {
-      setError(
-        typeof result.error === "string"
-          ? result.error
-          : "บันทึกค่าความดันไม่สำเร็จ",
+      if (!response.ok) {
+        setError(
+          result && typeof result === "object" && "error" in result && typeof result.error === "string"
+            ? result.error
+            : "บันทึกค่าความดันไม่สำเร็จ",
+        );
+        return;
+      }
+
+      const assessment = getBloodPressureAssessment(systolic, diastolic);
+
+      form.reset();
+      setMessage(
+        `บันทึกเรียบร้อยแล้ว ระบบประเมินเบื้องต้นว่า "${assessment.shortLabel}" และแนะนำว่า ${assessment.guidance}`,
       );
-      return;
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (submitError) {
+      console.error("BLOOD_PRESSURE_FORM_ERROR", submitError);
+      setError("บันทึกค่าความดันไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const assessment = getBloodPressureAssessment(systolic, diastolic);
-
-    form.reset();
-    setMessage(
-      `บันทึกเรียบร้อยแล้ว ระบบประเมินเบื้องต้นว่า "${assessment.shortLabel}" และแนะนำว่า ${assessment.guidance}`,
-    );
-    startTransition(() => {
-      router.refresh();
-    });
   }
 
   return (
@@ -105,7 +117,7 @@ export function BloodPressureForm({ elderlyId }: BloodPressureFormProps) {
           <Input
             name="measuredAt"
             type="datetime-local"
-            defaultValue={new Date().toISOString().slice(0, 16)}
+            defaultValue={toLocalDateTimeInputValue()}
             required
           />
         </label>
@@ -132,8 +144,8 @@ export function BloodPressureForm({ elderlyId }: BloodPressureFormProps) {
         ) : null}
 
         <div className="md:col-span-2">
-          <Button type="submit" fullWidth disabled={isPending}>
-            {isPending ? "กำลังบันทึก..." : "บันทึกค่าความดัน"}
+          <Button type="submit" fullWidth disabled={isSubmitting || isPending}>
+            {isSubmitting || isPending ? "กำลังบันทึก..." : "บันทึกค่าความดัน"}
           </Button>
         </div>
       </form>

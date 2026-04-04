@@ -10,6 +10,7 @@ import { ChatPanel } from "@/components/forms/chat-panel";
 import { MedicineUploadForm } from "@/components/forms/medicine-upload-form";
 import { Card, CardTitle } from "@/components/ui/card";
 import { DoctorCaseStatus } from "@/generated/prisma";
+import { formatSystemDateTime } from "@/lib/date-time";
 import { ensureElderlyProfileForUser } from "@/lib/elderly-profile";
 import { getBloodPressureAssessment } from "@/lib/health-presenters";
 import { canAccessElderlyPortal } from "@/lib/permissions";
@@ -18,10 +19,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+  return formatSystemDateTime(date);
 }
 
 export default async function ElderlyPortalPage() {

@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { formatSystemDateTime } from "@/lib/date-time";
 import Link from "next/link";
 
 type ElderlyRow = {
@@ -18,10 +19,7 @@ type ElderlyTableProps = {
 };
 
 function formatDate(value: Date) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(value);
+  return formatSystemDateTime(value);
 }
 
 export function ElderlyTable({

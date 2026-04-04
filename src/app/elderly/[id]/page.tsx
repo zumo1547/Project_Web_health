@@ -7,6 +7,7 @@ import { RecordDeleteButton } from "@/components/forms/record-delete-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { DoctorCaseStatus, Role } from "@/generated/prisma";
+import { formatSystemDateTime } from "@/lib/date-time";
 import {
   getBloodPressureAssessment,
   getCaseStatusContent,
@@ -27,10 +28,7 @@ type ElderlyDetailPageProps = {
 };
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+  return formatSystemDateTime(date);
 }
 
 function getAge(date?: Date | null) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSystemDateTime } from "@/lib/date-time";
 import { readApiResponse } from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -50,10 +51,7 @@ const roleLabels: Record<UserRole, string> = {
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatSystemDateTime(value, true);
 }
 
 function mapApiMessageToView(message: ApiChatMessage): ChatMessageView {

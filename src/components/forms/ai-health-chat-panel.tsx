@@ -1,5 +1,6 @@
 "use client";
 
+import { formatSystemDateTime } from "@/lib/date-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,10 +20,7 @@ type AiHealthChatPanelProps = {
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatSystemDateTime(value, true);
 }
 
 export function AiHealthChatPanel({

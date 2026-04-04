@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { CaseStatus, DoctorCaseStatus, Role } from "@/generated/prisma";
+import { formatSystemDateTime } from "@/lib/date-time";
 import { getBloodPressureAssessment } from "@/lib/health-presenters";
 import { canAccessDoctorPortal } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -13,10 +14,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
+  return formatSystemDateTime(date);
 }
 
 function summarizeText(value?: string | null) {

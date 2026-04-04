@@ -1,6 +1,10 @@
 "use client";
 
-import { buildOptimizedFormData, readApiResponse } from "@/lib/client-image";
+import {
+  buildOptimizedFormData,
+  fetchWithTimeout,
+  readApiResponse,
+} from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +19,7 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -23,10 +28,11 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
 
     setError("");
     setMessage("");
+    setIsSubmitting(true);
 
     try {
       const formData = await buildOptimizedFormData(form);
-      const response = await fetch(`/api/elderly/${elderlyId}/medicine-upload`, {
+      const response = await fetchWithTimeout(`/api/elderly/${elderlyId}/medicine-upload`, {
         method: "POST",
         body: formData,
       });
@@ -35,7 +41,7 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
 
       if (!response.ok) {
         setError(
-          typeof result.error === "string"
+          result && typeof result === "object" && "error" in result && typeof result.error === "string"
             ? result.error
             : "อัปโหลดรูปยาไม่สำเร็จ",
         );
@@ -49,7 +55,9 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
       });
     } catch (submitError) {
       console.error("MEDICINE_UPLOAD_FORM_ERROR", submitError);
-      setError("อัปโหลดรูปยาไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น");
+      setError("อัปโหลดรูปยาไม่สำเร็จ กรุณาลองใช้รูปที่เล็กลงหรือคมชัดขึ้น");
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -58,14 +66,14 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
       <div className="space-y-3">
         <CardTitle>เก็บรูปยาไว้ในแฟ้ม</CardTitle>
         <CardDescription>
-          ใช้เมื่ออยากแนบรูปยาเก็บไว้ในระบบก่อน โดยยังไม่ต้องสแกนกับ AI ก็ได้
+          ใช้เมื่อต้องการแนบรูปยาเก็บไว้ในระบบก่อน โดยยังไม่ต้องสแกนกับ AI ก็ได้
         </CardDescription>
       </div>
 
       <div className="mt-6 rounded-[1.6rem] border border-amber-100 bg-amber-50/70 p-5">
         <p className="text-base font-bold text-slate-950">ถ่ายรูปอย่างไรให้ดูง่าย</p>
         <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
-          <p>1. วางกล่องยาหรือแผงยาในที่มีแสงพอ</p>
+          <p>1. วางกล่องยาหรือแผงยาในที่ที่มีแสงพอ</p>
           <p>2. ถ่ายให้เห็นชื่อยาและขนาดยาให้ชัด</p>
           <p>3. มือถือกดถ่ายรูปได้ทันทีจากปุ่มเลือกไฟล์</p>
         </div>
@@ -97,8 +105,8 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
           </p>
         ) : null}
 
-        <Button type="submit" fullWidth disabled={isPending}>
-          {isPending ? "กำลังอัปโหลด..." : "บันทึกรูปยา"}
+        <Button type="submit" fullWidth disabled={isSubmitting || isPending}>
+          {isSubmitting || isPending ? "กำลังอัปโหลด..." : "บันทึกรูปยา"}
         </Button>
       </form>
     </Card>

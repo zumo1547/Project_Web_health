@@ -1,5 +1,7 @@
-const MAX_UPLOAD_EDGE = 1600;
-const MAX_UPLOAD_BYTES = 1_800_000;
+const MAX_UPLOAD_EDGE = 1440;
+const MAX_UPLOAD_BYTES = 1_200_000;
+const REQUEST_TIMEOUT_MS = 25000;
+const CAMERA_FORMAT_EXTENSIONS = [".heic", ".heif", ".jfif"];
 
 type ImageDecodeResult = {
   width: number;
@@ -10,43 +12,52 @@ type ImageDecodeResult = {
 
 async function decodeImage(file: File): Promise<ImageDecodeResult> {
   if (typeof createImageBitmap === "function") {
-    const bitmap = await createImageBitmap(file);
+    try {
+      const bitmap = await createImageBitmap(file);
 
-    return {
-      width: bitmap.width,
-      height: bitmap.height,
-      close: () => bitmap.close(),
-      source: bitmap,
-    };
+      return {
+        width: bitmap.width,
+        height: bitmap.height,
+        close: () => bitmap.close(),
+        source: bitmap,
+      };
+    } catch (error) {
+      console.error("CREATE_IMAGE_BITMAP_FAILED", error);
+    }
   }
 
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(reader.error ?? new Error("IMAGE_READ_FAILED"));
-    reader.readAsDataURL(file);
-  });
-
+  const objectUrl = URL.createObjectURL(file);
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
     const element = new Image();
+    element.decoding = "async";
     element.onload = () => resolve(element);
     element.onerror = () => reject(new Error("IMAGE_DECODE_FAILED"));
-    element.src = dataUrl;
+    element.src = objectUrl;
   });
 
   return {
     width: image.naturalWidth,
     height: image.naturalHeight,
+    close: () => URL.revokeObjectURL(objectUrl),
     source: image,
   };
 }
 
+function shouldNormalizeImage(file: File) {
+  const normalizedName = file.name.toLowerCase();
+
+  return (
+    file.size > MAX_UPLOAD_BYTES ||
+    CAMERA_FORMAT_EXTENSIONS.some((extension) => normalizedName.endsWith(extension))
+  );
+}
+
 export async function optimizeImageFile(file: File) {
-  if (
-    typeof window === "undefined" ||
-    !file.type.startsWith("image/") ||
-    file.size <= MAX_UPLOAD_BYTES
-  ) {
+  if (typeof window === "undefined" || !file.type.startsWith("image/")) {
+    return file;
+  }
+
+  if (!shouldNormalizeImage(file)) {
     return file;
   }
 
@@ -74,7 +85,7 @@ export async function optimizeImageFile(file: File) {
     decoded.close?.();
 
     const blob = await new Promise<Blob | null>((resolve) => {
-      canvas.toBlob(resolve, "image/jpeg", 0.82);
+      canvas.toBlob(resolve, "image/jpeg", 0.78);
     });
 
     if (!blob || blob.size >= file.size) {
@@ -117,4 +128,22 @@ export async function readApiResponse(response: Response) {
   return {
     error: text || "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์",
   };
+}
+
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = REQUEST_TIMEOUT_MS,
+) {
+  const controller = new AbortController();
+  const timeoutHandle = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+  } finally {
+    window.clearTimeout(timeoutHandle);
+  }
 }

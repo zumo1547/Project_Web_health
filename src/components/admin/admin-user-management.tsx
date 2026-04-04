@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { formatSystemDateTime } from "@/lib/date-time";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -29,10 +30,7 @@ const roleLabels: Record<AdminUserRow["role"], string> = {
 };
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatSystemDateTime(value);
 }
 
 export function AdminUserManagement({

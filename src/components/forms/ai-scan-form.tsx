@@ -1,6 +1,10 @@
 "use client";
 
-import { buildOptimizedFormData, readApiResponse } from "@/lib/client-image";
+import {
+  buildOptimizedFormData,
+  fetchWithTimeout,
+  readApiResponse,
+} from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -48,6 +52,7 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
   const [medicineMessage, setMedicineMessage] = useState("");
   const [pressureError, setPressureError] = useState("");
   const [pressureMessage, setPressureMessage] = useState("");
+  const [activeScan, setActiveScan] = useState<ScanKind | null>(null);
   const [isPending, startTransition] = useTransition();
 
   async function submitScan(event: FormEvent<HTMLFormElement>, kind: ScanKind) {
@@ -63,8 +68,10 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
     }
 
     try {
+      setActiveScan(kind);
+
       const formData = await buildOptimizedFormData(form);
-      const response = await fetch(`/api/elderly/${elderlyId}/ai-scan`, {
+      const response = await fetchWithTimeout(`/api/elderly/${elderlyId}/ai-scan`, {
         method: "POST",
         body: formData,
       });
@@ -117,14 +124,16 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
       console.error("AI_SCAN_FORM_ERROR", error);
       const fallback =
         kind === "medicine"
-          ? "สแกนรูปยาไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น"
-          : "สแกนรูปความดันไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น";
+          ? "สแกนรูปยาไม่สำเร็จ กรุณาลองใช้รูปที่เล็กลงหรือคมชัดขึ้น"
+          : "สแกนรูปความดันไม่สำเร็จ กรุณาลองใช้รูปที่เล็กลงหรือคมชัดขึ้น";
 
       if (kind === "medicine") {
         setMedicineError(fallback);
       } else {
         setPressureError(fallback);
       }
+    } finally {
+      setActiveScan(null);
     }
   }
 
@@ -178,10 +187,10 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
           <Button
             type="submit"
             fullWidth
-            disabled={isPending}
+            disabled={isPending || activeScan === "medicine"}
             className="bg-slate-950 hover:bg-slate-800 focus-visible:outline-slate-900"
           >
-            {isPending ? "กำลังสแกนรูปยา..." : "สแกนรูปยา"}
+            {activeScan === "medicine" || isPending ? "กำลังสแกนรูปยา..." : "สแกนรูปยา"}
           </Button>
         </form>
       </Card>
@@ -211,7 +220,9 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
           <input type="hidden" name="autoCreateRecord" value="true" />
 
           <label className="block space-y-2">
-            <span className="text-sm font-bold text-slate-700">เลือกรูปหรือถ่ายรูปความดัน</span>
+            <span className="text-sm font-bold text-slate-700">
+              เลือกรูปหรือถ่ายรูปความดัน
+            </span>
             <Input name="file" type="file" accept="image/*" capture="environment" required />
           </label>
 
@@ -232,8 +243,14 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
             </p>
           ) : null}
 
-          <Button type="submit" fullWidth disabled={isPending}>
-            {isPending ? "กำลังอ่านค่าความดัน..." : "สแกนความดันและบันทึก"}
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isPending || activeScan === "blood-pressure"}
+          >
+            {activeScan === "blood-pressure" || isPending
+              ? "กำลังอ่านค่าความดัน..."
+              : "สแกนความดันและบันทึก"}
           </Button>
         </form>
       </Card>
