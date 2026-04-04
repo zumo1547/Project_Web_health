@@ -3,6 +3,7 @@ import { AdminCaseAssignment } from "@/components/admin/admin-case-assignment";
 import { AdminProfileManagement } from "@/components/admin/admin-profile-management";
 import { AdminUserManagement } from "@/components/admin/admin-user-management";
 import { AppShell } from "@/components/dashboard/app-shell";
+import { QuickActionCard } from "@/components/dashboard/quick-action-card";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { ElderlyForm } from "@/components/forms/elderly-form";
 import { RegisterForm } from "@/components/forms/register-form";
@@ -32,6 +33,8 @@ export default async function AdminPage() {
     totalElderlyAccounts,
     waitingCases,
     activeCases,
+    completedCases,
+    selfServiceCases,
   ] = await Promise.all([
     prisma.user.findMany({
       orderBy: {
@@ -115,14 +118,34 @@ export default async function AdminPage() {
     prisma.elderlyProfile.count({
       where: { caseStatus: CaseStatus.IN_REVIEW },
     }),
+    prisma.elderlyProfile.count({
+      where: { caseStatus: CaseStatus.COMPLETED },
+    }),
+    prisma.elderlyProfile.count({
+      where: { caseStatus: CaseStatus.SELF_SERVICE },
+    }),
   ]);
+
+  const totalUsers = users.length;
+  const doctorCoverage = profiles.length
+    ? Math.round((activeCases / profiles.length) * 100)
+    : 0;
+  const unassignedProfiles = profiles.filter((profile) => !profile.doctors.length).length;
+  const latestUpdatedProfile = profiles[0];
 
   return (
     <AppShell
       portal="admin"
       title="ศูนย์จัดการระบบ"
-      subtitle="ดูผู้ใช้ทั้งหมด ตั้งผู้ใช้ให้เป็นคุณหมอ จับคู่คุณหมอกับผู้สูงอายุ และลบข้อมูลที่ไม่ใช้งานแล้วได้จากหน้ารวมเดียว"
+      subtitle="ดูภาพรวมผู้ใช้และเคสทั้งหมด จับคู่คุณหมอกับผู้สูงอายุ เปิดหรือรีเซ็ตเคส และจัดการบัญชีจากมุมมองที่อ่านง่ายขึ้น"
       user={session.user}
+      navigation={[
+        { href: "#overview", label: "ภาพรวมระบบ", eyebrow: "Pulse" },
+        { href: "#manage-users", label: "ผู้ใช้ทั้งหมด", eyebrow: "Users" },
+        { href: "#case-assignment", label: "จับคู่เคส", eyebrow: "Cases" },
+        { href: "#cleanup", label: "ล้างข้อมูล", eyebrow: "Cleanup" },
+        { href: "#create", label: "สร้างข้อมูลใหม่", eyebrow: "Create" },
+      ]}
       actions={
         <Link
           href="#case-assignment"
@@ -132,131 +155,238 @@ export default async function AdminPage() {
         </Link>
       }
     >
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <section id="overview" className="grid gap-6 xl:grid-cols-[1.14fr_0.86fr]">
+        <Card className="overflow-hidden border-amber-200 bg-[linear-gradient(135deg,rgba(255,251,235,0.99)_0%,rgba(255,255,255,0.97)_100%)]">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-amber-700">
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                Admin command center
+              </div>
+              <CardTitle>จัดการผู้ใช้ เคส และการเชื่อมหมอจากหน้าหลักเดียว</CardTitle>
+              <CardDescription>
+                ด้านบนนี้เป็นจุดดูสถานะระบบโดยรวม ส่วนด้านล่างแบ่งพื้นที่สำหรับจัดการผู้ใช้ จับคู่เคส ล้างข้อมูลที่ไม่ใช้แล้ว และสร้างบัญชีหรือแฟ้มใหม่ให้เข้าถึงได้ง่ายขึ้น
+              </CardDescription>
+            </div>
+
+            <div className="rounded-[1.7rem] border border-amber-100 bg-white/88 px-4 py-4 text-sm leading-7 text-slate-600">
+              <p className="font-bold text-slate-900">สถานะล่าสุด</p>
+              <p className="mt-2">
+                {latestUpdatedProfile
+                  ? `แฟ้มที่มีการอัปเดตล่าสุดคือ ${latestUpdatedProfile.firstName} ${latestUpdatedProfile.lastName}`
+                  : "ยังไม่มีแฟ้มผู้สูงอายุในระบบ"}
+              </p>
+              <p className="mt-1">
+                {unassignedProfiles > 0
+                  ? `ยังมีแฟ้มที่ยังไม่ถูกจับคู่คุณหมอ ${unassignedProfiles} แฟ้ม`
+                  : "ทุกแฟ้มที่มีอยู่ถูกเชื่อมกับคุณหมอหรืออยู่ในโหมดใช้งานด้วยตัวเองแล้ว"}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <QuickActionCard
+              href="#manage-users"
+              eyebrow="Users"
+              title="จัดการบัญชีทั้งหมด"
+              description="เปลี่ยนบทบาทผู้ใช้ให้เป็นคุณหมอ ดูบัญชีที่มีแฟ้มแล้ว และลบบัญชีที่ไม่ใช้"
+              tone="admin"
+            />
+            <QuickActionCard
+              href="#case-assignment"
+              eyebrow="Cases"
+              title="จับคู่หมอกับผู้สูงอายุ"
+              description="เลือกคุณหมอประจำเคส เปิดคิวใหม่ หรือยกเลิกการดูแลจากหน้าจัดการเดียว"
+              tone="admin"
+            />
+            <QuickActionCard
+              href="#create"
+              eyebrow="Create"
+              title="สร้างบัญชีและแฟ้ม"
+              description="เพิ่มบัญชีใหม่หรือสร้างแฟ้มผู้สูงอายุจากฝั่งแอดมินได้ทันที"
+              tone="admin"
+            />
+          </div>
+        </Card>
+
+        <div className="grid gap-4">
+          <Card className="border-amber-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(255,247,237,0.95)_100%)]">
+            <CardTitle>สัดส่วนการดูแลในระบบ</CardTitle>
+            <div className="mt-5 space-y-4">
+              <div>
+                <div className="flex items-center justify-between gap-3 text-sm font-bold text-slate-700">
+                  <span>แฟ้มที่กำลังมีคุณหมอดูแล</span>
+                  <span>{doctorCoverage}%</span>
+                </div>
+                <div className="mt-2 h-3 rounded-full bg-amber-100">
+                  <div
+                    className="h-3 rounded-full bg-amber-500 transition-all"
+                    style={{ width: `${doctorCoverage}%` }}
+                  />
+                </div>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[1.5rem] bg-amber-50 px-4 py-4">
+                  <p className="text-sm font-bold text-slate-900">เคสเสร็จสิ้น</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                    {completedCases}
+                  </p>
+                </div>
+                <div className="rounded-[1.5rem] bg-slate-50 px-4 py-4">
+                  <p className="text-sm font-bold text-slate-900">ใช้งานด้วยตัวเอง</p>
+                  <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                    {selfServiceCases}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.96)_100%)]">
+            <CardTitle>เช็กก่อนเริ่มจัดการ</CardTitle>
+            <div className="mt-5 space-y-3 text-base leading-8 text-slate-700">
+              <p>1. เปิดส่วนผู้ใช้ทั้งหมดเพื่อเช็กว่าบัญชีใดควรถูกตั้งเป็นคุณหมอ</p>
+              <p>2. เปิดส่วนจับคู่เคสเพื่อดูว่าแฟ้มใดกำลังรอคุณหมอหรือควรเปลี่ยนผู้ดูแล</p>
+              <p>3. ใช้ส่วนล้างข้อมูลเมื่อต้องลบแฟ้มเก่าที่ไม่ใช้งานออกจากระบบอย่างเป็นระเบียบ</p>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <SummaryCard
           label="ผู้ใช้ทั้งหมด"
-          value={String(users.length)}
+          value={String(totalUsers)}
           description="รวมทุกบัญชีที่มีอยู่ในระบบตอนนี้"
           tone="admin"
         />
         <SummaryCard
           label="ผู้สูงอายุ"
           value={String(totalElderlyAccounts)}
-          description="จำนวนบัญชีที่ใช้เข้าสู่พอร์ทัลผู้สูงอายุ"
+          description="จำนวนบัญชีผู้สูงอายุที่ใช้พอร์ทัลหลัก"
           tone="admin"
         />
         <SummaryCard
           label="คุณหมอ"
           value={String(totalDoctors)}
-          description="จำนวนบัญชีคุณหมอที่พร้อมรับเคส"
+          description="จำนวนบัญชีคุณหมอที่พร้อมรับหรือติดตามเคส"
           tone="admin"
         />
         <SummaryCard
-          label="รอคุณหมอรับเคส"
+          label="รอหมอรับเคส"
           value={String(waitingCases)}
-          description="จำนวนแฟ้มที่เปิดรอให้คุณหมอเข้าดูแล"
+          description="แฟ้มที่กำลังรอให้มีคุณหมอเข้ามาดูแล"
           tone="admin"
         />
         <SummaryCard
-          label="กำลังดูแลอยู่"
+          label="กำลังดูแล"
           value={String(activeCases)}
-          description="จำนวนแฟ้มที่มีคุณหมอกำลังดูแลอยู่"
+          description="แฟ้มที่มีคุณหมอเปิดติดตามอยู่ในตอนนี้"
           tone="admin"
         />
       </section>
 
-      <Card className="mt-6 border-amber-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,251,235,0.96)_100%)]">
-        <div className="space-y-3">
-          <CardTitle>ทางลัดสำหรับแอดมิน</CardTitle>
-          <CardDescription>
-            กดเข้าแต่ละส่วนได้ทันที เพื่อเช็กผู้ใช้ คุณหมอ การจับคู่เคส และล้างข้อมูลที่ไม่ใช้แล้วจากหน้าเดียว
+      <section id="manage-users" className="mt-6 grid gap-6 xl:grid-cols-[0.36fr_0.64fr]">
+        <Card className="border-cyan-100 bg-[linear-gradient(180deg,rgba(240,249,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>มุมจัดการผู้ใช้</CardTitle>
+          <CardDescription className="mt-2">
+            ใช้ส่วนนี้เมื่ออยากดูรายชื่อทั้งหมด แยกบัญชีที่ควรเป็นคุณหมอ และตรวจว่าบัญชีใดผูกกับแฟ้มผู้สูงอายุอยู่แล้ว
           </CardDescription>
-        </div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+            <div className="rounded-[1.5rem] bg-white/88 p-4">
+              <p className="text-sm font-bold text-slate-900">บัญชีคุณหมอ</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                {totalDoctors}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] bg-white/88 p-4">
+              <p className="text-sm font-bold text-slate-900">บัญชีผู้สูงอายุ</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                {totalElderlyAccounts}
+              </p>
+            </div>
+          </div>
+        </Card>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <Link
-            href="#manage-users"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            จัดการผู้ใช้ทั้งหมด
-          </Link>
-          <Link
-            href="#case-assignment"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            จัดการจับคู่เคส
-          </Link>
-          <Link
-            href="#cleanup"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            ล้างข้อมูลที่ไม่ใช้
-          </Link>
-          <Link
-            href="#create-user"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            สร้างบัญชีใหม่
-          </Link>
-          <Link
-            href="#create-profile"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            สร้างแฟ้มผู้สูงอายุ
-          </Link>
-          <Link
-            href="/doctor"
-            className="rounded-[1.4rem] border border-slate-200 bg-white px-4 py-4 text-base font-bold text-slate-900 transition hover:border-amber-200 hover:bg-amber-50"
-          >
-            เปิดโหมดคุณหมอ
-          </Link>
-        </div>
-      </Card>
-
-      <section className="mt-6 grid gap-6">
-        <div id="manage-users">
-          <AdminUserManagement
-            currentUserId={session.user.id}
-            users={users.map((user) => ({
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role as "ADMIN" | "DOCTOR" | "ELDERLY" | "CAREGIVER",
-              createdAt: user.createdAt.toISOString(),
-              elderlyProfileId: user.elderlyProfile?.id ?? null,
-              doctorCaseCount: user.doctorPatients.length,
-            }))}
-          />
-        </div>
-
-        <div id="case-assignment">
-          <AdminCaseAssignment
-            doctors={doctors}
-            profiles={profiles.map((profile) => ({
-              id: profile.id,
-              fullName: `${profile.firstName} ${profile.lastName}`,
-              caseStatus: profile.caseStatus,
-              doctorRequestNote: profile.doctorRequestNote,
-              doctors: profile.doctors.map((item) => item.doctor),
-            }))}
-          />
-        </div>
-
-        <div id="cleanup">
-          <AdminProfileManagement
-            profiles={profiles.map((profile) => ({
-              id: profile.id,
-              fullName: `${profile.firstName} ${profile.lastName}`,
-              updatedAt: profile.updatedAt.toISOString(),
-              caseStatus: profile.caseStatus,
-              doctorNames: profile.doctors.map((item) => item.doctor.name),
-              elderlyEmail: profile.elderlyUser?.email ?? null,
-            }))}
-          />
-        </div>
+        <AdminUserManagement
+          currentUserId={session.user.id}
+          users={users.map((user) => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role as "ADMIN" | "DOCTOR" | "ELDERLY" | "CAREGIVER",
+            createdAt: user.createdAt.toISOString(),
+            elderlyProfileId: user.elderlyProfile?.id ?? null,
+            doctorCaseCount: user.doctorPatients.length,
+          }))}
+        />
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-2">
+      <section id="case-assignment" className="mt-6 grid gap-6 xl:grid-cols-[0.34fr_0.66fr]">
+        <Card className="border-amber-100 bg-[linear-gradient(180deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>มุมจับคู่เคส</CardTitle>
+          <CardDescription className="mt-2">
+            ตรวจดูว่าแฟ้มใดกำลังรอคุณหมอ แฟ้มใดต้องเปิดคิวใหม่ และแฟ้มใดควรเปลี่ยนคุณหมอผู้ดูแลเพื่อให้ระบบไม่ติดค้าง
+          </CardDescription>
+          <div className="mt-5 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
+            <div className="rounded-[1.5rem] bg-white/88 p-4">
+              <p className="text-sm font-bold text-slate-900">รอรับเคส</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                {waitingCases}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] bg-white/88 p-4">
+              <p className="text-sm font-bold text-slate-900">กำลังดูแล</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                {activeCases}
+              </p>
+            </div>
+            <div className="rounded-[1.5rem] bg-white/88 p-4">
+              <p className="text-sm font-bold text-slate-900">ยังไม่ถูกจับคู่</p>
+              <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                {unassignedProfiles}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <AdminCaseAssignment
+          doctors={doctors}
+          profiles={profiles.map((profile) => ({
+            id: profile.id,
+            fullName: `${profile.firstName} ${profile.lastName}`,
+            caseStatus: profile.caseStatus,
+            doctorRequestNote: profile.doctorRequestNote,
+            doctors: profile.doctors.map((item) => item.doctor),
+          }))}
+        />
+      </section>
+
+      <section id="cleanup" className="mt-6 grid gap-6 xl:grid-cols-[0.32fr_0.68fr]">
+        <Card className="border-rose-100 bg-[linear-gradient(180deg,rgba(255,241,242,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>ล้างข้อมูลอย่างปลอดภัย</CardTitle>
+          <CardDescription className="mt-2">
+            ใช้ส่วนนี้เฉพาะเมื่อตรวจสอบแล้วว่าแฟ้มไม่ต้องเก็บต่อ เพราะการลบจะลบประวัติความดัน รูปยา ผล AI และแชทของเคสนั้นออกทั้งหมด
+          </CardDescription>
+          <div className="mt-5 rounded-[1.5rem] bg-white/88 p-4 text-base leading-8 text-slate-700">
+            <p>ตรวจชื่อแฟ้มและอีเมลให้ตรงก่อนกดลบทุกครั้ง</p>
+            <p>ควรย้ายหรือปิดเคสก่อนลบเพื่อไม่ให้ข้อมูลการดูแลขาดตอน</p>
+          </div>
+        </Card>
+
+        <AdminProfileManagement
+          profiles={profiles.map((profile) => ({
+            id: profile.id,
+            fullName: `${profile.firstName} ${profile.lastName}`,
+            updatedAt: profile.updatedAt.toISOString(),
+            caseStatus: profile.caseStatus,
+            doctorNames: profile.doctors.map((item) => item.doctor.name),
+            elderlyEmail: profile.elderlyUser?.email ?? null,
+          }))}
+        />
+      </section>
+
+      <section id="create" className="mt-6 grid gap-6 xl:grid-cols-2">
         <div id="create-user">
           <RegisterForm
             allowedRoles={["ELDERLY", "DOCTOR", "ADMIN"]}
@@ -264,7 +394,7 @@ export default async function AdminPage() {
             showRoleSelect
             autoSignIn={false}
             title="สร้างบัญชีใหม่จากฝั่งแอดมิน"
-            description="ใช้สร้างบัญชีผู้สูงอายุ คุณหมอ หรือแอดมินเพิ่ม โดยไม่กระทบ session ปัจจุบัน"
+            description="ใช้สำหรับเพิ่มบัญชีผู้สูงอายุ คุณหมอ หรือแอดมินใหม่ โดยไม่กระทบ session ปัจจุบัน"
             submitLabel="สร้างบัญชี"
             className="max-w-none"
           />

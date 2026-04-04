@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/ui/logout-button";
+import { SectionNav } from "@/components/ui/section-nav";
 import { roleLabels } from "@/lib/permissions";
 import Image from "next/image";
 import type { Session } from "next-auth";
@@ -14,6 +15,11 @@ type AppShellProps = {
   user: Session["user"];
   children: React.ReactNode;
   actions?: React.ReactNode;
+  navigation?: Array<{
+    href: string;
+    label: string;
+    eyebrow?: string;
+  }>;
 };
 
 const portalStyles: Record<
@@ -73,6 +79,7 @@ export function AppShell({
   user,
   children,
   actions,
+  navigation = [],
 }: AppShellProps) {
   const styles = portalStyles[portal];
   const portalSwitchContainerClass =
@@ -172,7 +179,8 @@ export function AppShell({
           </div>
         </header>
 
-        <section className="mt-8 flex flex-col gap-3">
+        <section className="mt-8 grid gap-5 xl:grid-cols-[1.3fr_0.7fr] xl:items-end">
+          <div className="flex flex-col gap-3">
           <p className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
             {styles.eyebrow}
           </p>
@@ -182,7 +190,36 @@ export function AppShell({
           <p className="max-w-4xl text-base leading-8 text-slate-600 sm:text-lg">
             {subtitle}
           </p>
+          </div>
+
+          <div className="rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+              ใช้งานเร็ว
+            </p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+              <div className="rounded-[1.4rem] bg-slate-50 px-4 py-3">
+                <p className="text-sm font-bold text-slate-900">หาปุ่มได้ง่าย</p>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  ใช้แถบนำทางด้านล่างเพื่อข้ามไปแต่ละส่วนได้ทันที
+                </p>
+              </div>
+              <div className="rounded-[1.4rem] bg-slate-50 px-4 py-3">
+                <p className="text-sm font-bold text-slate-900">เหมาะกับมือถือ</p>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  ปุ่มหลักและส่วนที่ใช้บ่อยถูกดันขึ้นมาให้อยู่ใกล้นิ้วมากขึ้น
+                </p>
+              </div>
+              <div className="rounded-[1.4rem] bg-slate-50 px-4 py-3">
+                <p className="text-sm font-bold text-slate-900">ลดความรก</p>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  รวมเครื่องมือที่เกี่ยวกันไว้เป็นกลุ่มเดียว ดูง่ายขึ้นทุกหน้า
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
+
+        <SectionNav items={navigation} tone={portal} />
 
         <main className="mt-8">{children}</main>
       </div>

@@ -25,14 +25,18 @@ export function SummaryCard({
   tone = "elderly",
 }: SummaryCardProps) {
   return (
-    <Card className={`space-y-3 border ${toneStyles[tone]}`}>
-      <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-500">
-        {label}
-      </p>
-      <p className="text-[2.15rem] font-black tracking-tight text-slate-950 sm:text-[2.4rem]">
-        {value}
-      </p>
-      <p className="text-base leading-7 text-slate-600">{description}</p>
+    <Card className={`relative overflow-hidden border ${toneStyles[tone]}`}>
+      <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-white/45 blur-2xl" />
+      <div className="relative space-y-4">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+          <span>{label}</span>
+        </div>
+        <p className="text-[2.15rem] font-black tracking-tight text-slate-950 sm:text-[2.4rem]">
+          {value}
+        </p>
+        <p className="text-base leading-7 text-slate-600">{description}</p>
+      </div>
     </Card>
   );
 }
