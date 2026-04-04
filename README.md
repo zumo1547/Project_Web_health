@@ -1,318 +1,121 @@
-# ElderCare AI
+# Senior Health Check
 
-ระบบตัวอย่างสำหรับดูแลผู้สูงอายุ โดยใช้ `Next.js` ทั้ง frontend และ backend, `PostgreSQL + Prisma`, ระบบล็อกอิน `NextAuth/Auth.js`, และพร้อมต่อกับ `Vercel` สำหรับ deploy
+แอปต้นแบบสำหรับติดตามสุขภาพผู้สูงอายุ โดยเน้นการใช้งานง่ายบนมือถือและคอมพิวเตอร์ ผู้สูงอายุสามารถบันทึกค่าความดัน อัปโหลดรูปยา ขอคำแนะนำจากระบบ AI และติดต่อคุณหมอผ่านระบบเคสได้ ส่วนคุณหมอและแอดมินสามารถติดตามแฟ้มสุขภาพ ดูประวัติการอัปโหลด และจัดการเคสได้จากหน้าเว็บเดียว
 
-## Tech Stack
+Senior Health Check is a prototype web app for elderly health monitoring. It is designed to be easy to use on both phones and computers. Elderly users can record blood pressure, upload medicine photos, get AI-assisted hints, and contact doctors through a case workflow. Doctors and admins can review health records, uploaded history, and active cases in one place.
 
-- Frontend: React + Next.js App Router + TypeScript
-- Backend: Next.js Route Handlers
-- Database: PostgreSQL + Prisma
-- Auth/Security: NextAuth (Auth.js v5 beta), bcrypt, Role-based access control, Audit log
-- File storage: Local uploads ใน dev และรองรับ Vercel Blob ใน production
-- Deployment: Vercel
-- Local team workflow: Docker + Git
+## What This Web App Does
 
-## โครงสร้างหลัก
+- ผู้สูงอายุสมัครและเข้าสู่ระบบเพื่อใช้งานแฟ้มสุขภาพของตัวเอง
+- บันทึกค่าความดันได้ทั้งแบบกรอกเองและสแกนจากรูป
+- อัปโหลดหรือถ่ายรูปยาเพื่อให้ระบบช่วยอ่านข้อมูลเบื้องต้น
+- แชทกับ AI เพื่อสรุปข้อมูลสุขภาพแบบเข้าใจง่าย
+- ส่งข้อความขอคำปรึกษาเพื่อให้คุณหมอรับเคส
+- คุณหมอดูประวัติสุขภาพ เปิดแฟ้ม แชทกับผู้สูงอายุ และปิดเคสได้
+- แอดมินดูภาพรวมผู้ใช้ จัดการสิทธิ์ จับคู่หมอกับผู้สูงอายุ และตรวจสอบข้อมูลได้
 
-```txt
-src/
-  app/
-    api/
-      auth/[...nextauth]/route.ts
-      register/route.ts
-      elderly/route.ts
-      elderly/[id]/route.ts
-      elderly/[id]/blood-pressure/route.ts
-      elderly/[id]/medicine-upload/route.ts
-      elderly/[id]/ai-scan/route.ts
-    login/page.tsx
-    register/page.tsx
-    dashboard/page.tsx
-    doctor/page.tsx
-    elderly/[id]/page.tsx
-    layout.tsx
-    page.tsx
-  components/
-    ui/
-    forms/
-    dashboard/
-  lib/
-    prisma.ts
-    permissions.ts
-    audit.ts
-    storage.ts
-    ai.ts
-    validations.ts
-  auth.ts
-  types/
-    next-auth.d.ts
-prisma/
-  schema.prisma
-```
+- Elderly users can sign up and access their own health record.
+- Blood pressure can be added manually or scanned from an image.
+- Medicine photos can be uploaded from desktop or captured from a phone camera.
+- The app provides AI-assisted summaries and simple health guidance.
+- Doctors can accept cases, open patient records, chat, and close cases.
+- Admins can manage users, assignments, and overall system activity.
 
-## สิ่งที่ทำไว้แล้วในโค้ดนี้
+## Main Features
 
-1. สมัครสมาชิกได้เป็น `DOCTOR` และ `CAREGIVER`
-2. เข้าสู่ระบบด้วย email/password
-3. เพิ่มข้อมูลผู้สูงอายุและเชื่อมกับคุณหมอเจ้าของเคส
-4. บันทึกค่าความดันแบบ manual
-5. อัปโหลดรูปยา
-6. สแกน AI demo mode จากรูปยาและรูปความดัน
-7. ถ้า AI อ่านค่าความดันได้ สามารถสร้าง record ให้อัตโนมัติ
-8. ใช้ RBAC และตรวจสิทธิ์ซ้ำใน API
-9. เขียน Audit log ตอนสร้าง user / สร้างเคส / เพิ่มความดัน / สแกน AI
+- Elderly health profile and health history
+- Medicine image upload with AI/OCR-assisted interpretation
+- Blood pressure recording and basic risk hinting
+- Case request flow between elderly users and doctors
+- Chat between elderly users, doctors, and AI assistant
+- Admin tools for user management and case assignment
+- Audit logging and role-based access control
 
-## วิธีเริ่มโปรเจกต์ตั้งแต่สร้างใหม่
+## Quick Start
 
-ถ้าจะสร้างโปรเจกต์ใหม่จากศูนย์ ให้ใช้คำสั่งแนวนี้:
-
-```bash
-npx create-next-app@latest elderly-care-ai --yes --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm
-cd elderly-care-ai
-```
-
-จากนั้นติดตั้ง package สำคัญ:
-
-```bash
-npm install prisma @prisma/client next-auth@beta @auth/prisma-adapter bcrypt zod @vercel/blob
-```
-
-เริ่ม Prisma:
-
-```bash
-npx prisma init
-```
-
-แล้วค่อยสร้าง schema, auth, route handlers, pages, forms, Docker และ README ตามตัวอย่างใน repo นี้
-
-## วิธีรันโปรเจกต์นี้แบบ local
-
-1. ติดตั้ง dependency
+### Local development
 
 ```bash
 npm install
-```
-
-2. สร้างไฟล์ env
-
-```bash
 copy .env.example .env
-```
-
-3. เปิด PostgreSQL ผ่าน Docker
-
-```bash
 docker compose up -d db
-```
-
-4. generate Prisma client
-
-```bash
 npm run db:generate
-```
-
-5. sync schema ลงฐานข้อมูล
-
-```bash
 npm run db:push
-```
-
-6. เปิด dev server
-
-```bash
 npm run dev
 ```
 
-7. เปิดเว็บที่
+Open [http://localhost:3000](http://localhost:3000)
 
-```txt
-http://localhost:3000
-```
+### Neon + Vercel
 
-## วิธีรันทุกอย่างผ่าน Docker
-
-ถ้าทีมต้องการใช้ Docker เหมือนกันทั้งหมด:
-
-```bash
-docker compose up --build
-```
-
-จากนั้นเปิดอีก terminal เพื่อ sync schema:
-
-```bash
-docker compose exec app npm run db:push
-```
-
-## Flow การใช้งานระบบ
-
-1. เข้า `/register` เพื่อสร้างบัญชี `DOCTOR` หรือ `CAREGIVER`
-2. login ผ่าน `/login`
-3. ไปหน้า `/dashboard`
-4. เพิ่มข้อมูลผู้สูงอายุ
-5. ถ้าจะให้หน้า `/doctor` เห็นเคส ให้กรอกอีเมลคุณหมอตอนสร้างเคส
-6. เปิดหน้า `/elderly/[id]`
-7. บันทึกค่าความดัน
-8. อัปโหลดรูปยา
-9. ใช้ AI scan เพื่อช่วยวิเคราะห์รูปยา หรืออ่านค่าความดันจากรูป
-
-## Security ที่ใส่ไว้
-
-- Password hash ด้วย `bcrypt`
-- ใช้ `NextAuth/Auth.js` สำหรับ session และ credentials login
-- ใช้ `Role-based access control`
-- มี `proxy.ts` สำหรับกันหน้า protected route
-- มีการตรวจสิทธิ์ซ้ำใน Route Handlers ทุกจุดสำคัญ
-- ใช้ `zod` validate input
-- เก็บ Audit log สำหรับ action สำคัญ
-
-หมายเหตุสำคัญ:
-
-- ห้ามพึ่ง `proxy.ts` อย่างเดียวสำหรับ auth
-- production ควรใช้ HTTPS และตั้งค่า secret จริง
-- ถ้าจะใช้งานเรื่องรูปบน Vercel จริง ให้ตั้ง `BLOB_READ_WRITE_TOKEN`
-
-## AI mode ในโปรเจกต์นี้
-
-ตอนนี้ `src/lib/ai.ts` เป็น `demo mode` เพื่อให้ระบบรันได้ทันทีโดยไม่ต้องมี API key
-
-หลักการที่ใช้:
-
-- รูปยา: เดาจาก `hint text` หรือชื่อไฟล์ เช่น `amlodipine-5mg.jpg`
-- รูปความดัน: อ่าน pattern อย่าง `148/95` หรือ `pulse 88` จาก hint text หรือชื่อไฟล์
-
-ถ้าต้องการต่อ AI vision จริงในภายหลัง ให้เปลี่ยนเฉพาะ `src/lib/ai.ts`
-
-## Database model โดยย่อ
-
-- `User`: ผู้ใช้งานระบบ
-- `ElderlyProfile`: โปรไฟล์ผู้สูงอายุ
-- `DoctorPatient`: ความสัมพันธ์หมอกับเคส
-- `ElderlyCaregiver`: ความสัมพันธ์ผู้ดูแลกับเคส
-- `BloodPressureRecord`: ประวัติความดัน
-- `MedicineImage`: รูปยา
-- `AiScan`: ผลการสแกน AI
-- `AuditLog`: บันทึกการใช้งานสำคัญ
-
-## Git workflow ที่แนะนำสำหรับทีม
-
-1. ทุกคนเริ่มจาก branch หลักล่าสุด
-
-```bash
-git pull origin main
-```
-
-2. สร้าง branch งานของตัวเอง
-
-```bash
-git checkout -b feature/doctor-dashboard
-```
-
-3. ทำงานและ commit ให้ข้อความชัดเจน
-
-```bash
-git add .
-git commit -m "Add doctor dashboard flow"
-```
-
-4. push และเปิด Pull Request
-
-```bash
-git push origin feature/doctor-dashboard
-```
-
-## คำสั่งที่ใช้บ่อย
-
-```bash
-npm run dev
-npm run lint
-npm run build
-npm run db:generate
-npm run db:push
-npm run db:studio
-docker compose up --build
-docker compose down -v
-```
-
-## Deploy ไป Vercel
-
-1. Push โค้ดขึ้น GitHub
-2. Import โปรเจกต์เข้า Vercel
-3. ตั้งค่า Environment Variables:
+1. Connect a PostgreSQL database such as Neon.
+2. Add these environment variables in Vercel:
    - `DATABASE_URL`
    - `AUTH_SECRET`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL`
    - `APP_URL`
-   - `BLOB_READ_WRITE_TOKEN` (ถ้าใช้)
-4. ใช้ PostgreSQL production จริง เช่น Neon, Supabase หรือ managed Postgres อื่น
-5. รัน migration หรือ `prisma db push` กับฐานข้อมูล production
-
-## Official references
-
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [Next.js proxy / migration docs](https://nextjs.org/docs/app/guides/upgrading/codemods)
-- [Auth.js / NextAuth](https://authjs.dev/)
-- [Prisma ORM](https://www.prisma.io/docs/orm)
-- [Prisma v7 upgrade guide](https://docs.prisma.io/docs/guides/upgrade-prisma-orm/v7)
-- [Vercel Blob](https://vercel.com/docs/vercel-blob)
-
-## Neon Quick Setup
-
-Use this when you already connected Neon to Vercel and only want the shortest path to make the app work.
-
-### 1. Vercel Environment Variables
-
-Make sure these keys exist in Vercel:
-
-- `DATABASE_URL`
-- `AUTH_SECRET`
-- `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL`
-- `APP_URL`
-
-Optional for production image uploads:
-
-- `BLOB_READ_WRITE_TOKEN`
-
-### 2. Local file for Prisma commands
-
-Create `.env.local` from `.env.local.neon.example`
-
-```bash
-copy .env.local.neon.example .env.local
-```
-
-Put your Neon non-pooling URL into `.env.local`:
-
-```env
-DATABASE_URL_UNPOOLED="postgresql://..."
-```
-
-### 3. Push schema to Neon
+   - `BLOB_READ_WRITE_TOKEN` for production image uploads
+3. Create a local `.env.local` with your non-pooling database URL.
+4. Run:
 
 ```bash
 npm run db:push:neon
-```
-
-This script automatically prefers `DATABASE_URL_UNPOOLED` and is safer for Prisma CLI commands.
-
-### 4. Create the first admin account
-
-```bash
 npm run db:create-admin
 ```
 
-Default admin created by the script:
+## Important Notes
 
-```txt
-email: admin@eldercare.local
-password: Admin12345!
-```
+### ภาษาไทย
 
-You can override these in `.env.local`:
+- โปรเจกต์นี้ทำขึ้นเพื่อการศึกษา การทดลองระบบ และการสาธิตแนวคิดเท่านั้น
+- ไม่ใช่อุปกรณ์การแพทย์ และไม่ควรใช้แทนคำวินิจฉัยจากแพทย์จริง
+- ผล AI อาจอ่านรูปผิด ตีความผิด หรือให้คำแนะนำไม่ครบ โดยเฉพาะเมื่อรูปไม่ชัด แสงน้อย หรือมีข้อมูลถูกบัง
+- หากมีอาการฉุกเฉิน เช่น เจ็บหน้าอก หายใจลำบาก แขนขาอ่อนแรงเฉียบพลัน หรือความดันสูงผิดปกติอย่างรุนแรง ควรติดต่อโรงพยาบาลหรือหน่วยฉุกเฉินทันที
 
-```env
-ADMIN_EMAIL="your-admin@example.com"
-ADMIN_PASSWORD="YourStrongPassword123!"
-ADMIN_NAME="System Admin"
-```
+### English
+
+- This project is for education, prototyping, and demonstration purposes only.
+- It is not a certified medical device and must not replace professional medical judgment.
+- The AI layer may misread labels, images, or blood pressure values, especially when the image quality is poor.
+- For emergencies or urgent symptoms, users should contact a real hospital or emergency service immediately.
+
+## Privacy and Safety
+
+ก่อนอัปขึ้น GitHub หรือเปิดเดโมสาธารณะ ควรตรวจสอบดังนี้:
+
+- อย่าอัปโหลดไฟล์ `.env`, `.env.local`, database URLs, secrets, tokens, หรือรหัสผ่านจริงขึ้น Git
+- อย่าใช้ข้อมูลผู้ป่วยจริงในการเดโมสาธารณะ
+- อย่าอัปโหลดรูปที่มีเลขบัตรประชาชน เบอร์โทร ที่อยู่เต็ม ชื่อ-นามสกุลจริง หมายเลขโรงพยาบาล หรือข้อมูลส่วนตัวที่ระบุตัวบุคคลได้
+- หากเคยเผลอเปิดเผยรหัสผ่านฐานข้อมูลหรือ secret มาก่อน ควร rotate หรือ reset ใหม่ก่อน deploy
+- สำหรับ production บน Vercel หากต้องใช้อัปโหลดรูปจริง ควรตั้งค่า `BLOB_READ_WRITE_TOKEN`
+
+Before publishing the project or making the repository public:
+
+- Do not commit `.env`, `.env.local`, database URLs, secrets, tokens, or real passwords
+- Do not use real patient data in a public demo
+- Avoid uploading photos that expose IDs, phone numbers, full addresses, hospital numbers, or other personally identifiable information
+- Rotate any credential that may have been exposed before deployment
+- Set `BLOB_READ_WRITE_TOKEN` if you want production uploads to work on Vercel
+
+## Repository Notes
+
+- Environment files are intentionally excluded from Git, except for `.env.example`
+- Temporary local upload data should not be committed
+- Temporary development logs should not be committed
+- This repository is best used as a learning and prototype base for a healthcare workflow app
+
+## Tech Stack
+
+- Next.js App Router
+- React + TypeScript
+- PostgreSQL + Prisma
+- Auth.js / NextAuth
+- Docker for local database workflow
+- Vercel for deployment
+
+## License / Usage
+
+ใช้งานเพื่อการศึกษา การทดลอง และการพัฒนาต้นแบบได้ตามความเหมาะสม แต่ควรทบทวนด้านกฎหมาย ความปลอดภัย และความเป็นส่วนตัวก่อนนำไปใช้กับข้อมูลจริง
+
+Use this project for learning, experimentation, and prototyping. Review privacy, legal, security, and medical compliance requirements before using it with real-world data.
