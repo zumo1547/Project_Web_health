@@ -172,7 +172,27 @@ export async function POST(req: Request, context: RouteContext) {
       },
     });
 
-    return Response.json(responsePayload, { status: 201 });
+    return Response.json(
+      {
+        aiScan: {
+          id: responsePayload.aiScan.id,
+          scanType: responsePayload.aiScan.scanType,
+          summary: responsePayload.aiScan.summary,
+          confidence: responsePayload.aiScan.confidence,
+          createdAt: responsePayload.aiScan.createdAt,
+        },
+        bloodPressureRecord: responsePayload.bloodPressureRecord
+          ? {
+              id: responsePayload.bloodPressureRecord.id,
+              systolic: responsePayload.bloodPressureRecord.systolic,
+              diastolic: responsePayload.bloodPressureRecord.diastolic,
+              pulse: responsePayload.bloodPressureRecord.pulse,
+              measuredAt: responsePayload.bloodPressureRecord.measuredAt,
+            }
+          : null,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     const permissionResponse = permissionErrorToResponse(error);
     if (permissionResponse) return permissionResponse;

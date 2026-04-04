@@ -1,5 +1,6 @@
 "use client";
 
+import { buildOptimizedFormData, readApiResponse } from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,32 +20,37 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
 
     setError("");
     setMessage("");
 
-    const response = await fetch(`/api/elderly/${elderlyId}/medicine-upload`, {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const formData = await buildOptimizedFormData(form);
+      const response = await fetch(`/api/elderly/${elderlyId}/medicine-upload`, {
+        method: "POST",
+        body: formData,
+      });
 
-    const result = await response.json();
+      const result = await readApiResponse(response);
 
-    if (!response.ok) {
-      setError(
-        typeof result.error === "string"
-          ? result.error
-          : "อัปโหลดรูปยาไม่สำเร็จ",
-      );
-      return;
+      if (!response.ok) {
+        setError(
+          typeof result.error === "string"
+            ? result.error
+            : "อัปโหลดรูปยาไม่สำเร็จ",
+        );
+        return;
+      }
+
+      form.reset();
+      setMessage("บันทึกรูปยาเรียบร้อยแล้ว");
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (submitError) {
+      console.error("MEDICINE_UPLOAD_FORM_ERROR", submitError);
+      setError("อัปโหลดรูปยาไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น");
     }
-
-    form.reset();
-    setMessage("บันทึกรูปยาเรียบร้อยแล้ว");
-    startTransition(() => {
-      router.refresh();
-    });
   }
 
   return (
@@ -76,13 +82,7 @@ export function MedicineUploadForm({ elderlyId }: MedicineUploadFormProps) {
 
         <label className="block space-y-2">
           <span className="text-sm font-bold text-slate-700">เลือกรูปหรือถ่ายรูป</span>
-          <Input
-            name="file"
-            type="file"
-            accept="image/*"
-            capture="environment"
-            required
-          />
+          <Input name="file" type="file" accept="image/*" capture="environment" required />
         </label>
 
         {error ? (

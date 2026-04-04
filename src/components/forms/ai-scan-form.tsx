@@ -1,5 +1,6 @@
 "use client";
 
+import { buildOptimizedFormData, readApiResponse } from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -52,7 +53,6 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
   async function submitScan(event: FormEvent<HTMLFormElement>, kind: ScanKind) {
     event.preventDefault();
     const form = event.currentTarget;
-    const formData = new FormData(form);
 
     if (kind === "medicine") {
       setMedicineError("");
@@ -62,49 +62,70 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
       setPressureMessage("");
     }
 
-    const response = await fetch(`/api/elderly/${elderlyId}/ai-scan`, {
-      method: "POST",
-      body: formData,
-    });
+    try {
+      const formData = await buildOptimizedFormData(form);
+      const response = await fetch(`/api/elderly/${elderlyId}/ai-scan`, {
+        method: "POST",
+        body: formData,
+      });
 
-    const result = await response.json();
+      const result = await readApiResponse(response);
 
-    if (!response.ok) {
-      const fallback =
-        kind === "medicine"
-          ? "สแกนรูปยาไม่สำเร็จ"
-          : "สแกนรูปความดันไม่สำเร็จ";
-      const errorMessage = getApiErrorMessage(result, fallback);
+      if (!response.ok) {
+        const fallback =
+          kind === "medicine"
+            ? "สแกนรูปยาไม่สำเร็จ"
+            : "สแกนรูปความดันไม่สำเร็จ";
+        const errorMessage = getApiErrorMessage(result, fallback);
 
-      if (kind === "medicine") {
-        setMedicineError(errorMessage);
-      } else {
-        setPressureError(errorMessage);
+        if (kind === "medicine") {
+          setMedicineError(errorMessage);
+        } else {
+          setPressureError(errorMessage);
+        }
+
+        return;
       }
 
-      return;
+      form.reset();
+
+      if (kind === "medicine") {
+        setMedicineMessage(
+          (result as { aiScan?: { summary?: string } }).aiScan?.summary ??
+            "สแกนรูปยาและบันทึกผลเรียบร้อยแล้ว",
+        );
+      } else {
+        const payload = result as {
+          aiScan?: { summary?: string };
+          bloodPressureRecord?: unknown;
+        };
+        const savedText = payload.bloodPressureRecord
+          ? "และบันทึกลงในประวัติความดันแล้ว"
+          : "";
+
+        setPressureMessage(
+          payload.aiScan?.summary
+            ? `${payload.aiScan.summary} ${savedText}`.trim()
+            : `สแกนรูปความดันเรียบร้อยแล้ว ${savedText}`.trim(),
+        );
+      }
+
+      startTransition(() => {
+        router.refresh();
+      });
+    } catch (error) {
+      console.error("AI_SCAN_FORM_ERROR", error);
+      const fallback =
+        kind === "medicine"
+          ? "สแกนรูปยาไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น"
+          : "สแกนรูปความดันไม่สำเร็จ กรุณาลองรูปที่เล็กลงหรือชัดขึ้น";
+
+      if (kind === "medicine") {
+        setMedicineError(fallback);
+      } else {
+        setPressureError(fallback);
+      }
     }
-
-    form.reset();
-
-    if (kind === "medicine") {
-      setMedicineMessage(
-        result.aiScan?.summary ?? "สแกนรูปยาและบันทึกผลเรียบร้อยแล้ว",
-      );
-    } else {
-      const savedText = result.bloodPressureRecord
-        ? "และบันทึกลงในประวัติความดันแล้ว"
-        : "";
-      setPressureMessage(
-        result.aiScan?.summary
-          ? `${result.aiScan.summary} ${savedText}`.trim()
-          : `สแกนรูปความดันเรียบร้อยแล้ว ${savedText}`.trim(),
-      );
-    }
-
-    startTransition(() => {
-      router.refresh();
-    });
   }
 
   return (
@@ -126,21 +147,12 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
           </div>
         </div>
 
-        <form
-          className="mt-6 space-y-5"
-          onSubmit={(event) => submitScan(event, "medicine")}
-        >
+        <form className="mt-6 space-y-5" onSubmit={(event) => submitScan(event, "medicine")}>
           <input type="hidden" name="scanType" value="MEDICINE_IMAGE" />
 
           <label className="block space-y-2">
             <span className="text-sm font-bold text-slate-700">เลือกรูปหรือถ่ายรูปยา</span>
-            <Input
-              name="file"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              required
-            />
+            <Input name="file" type="file" accept="image/*" capture="environment" required />
           </label>
 
           <label className="block space-y-2">
@@ -187,7 +199,7 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
           <div className="mt-3 space-y-2 text-sm leading-7 text-slate-600">
             <p>1. ถ่ายให้เห็นค่าบน ค่าล่าง และชีพจรชัดที่สุด</p>
             <p>2. พยายามไม่ให้มีแสงสะท้อนหน้าจอเครื่องวัด</p>
-            <p>3. ระบบจะบันทึกค่าเข้าประวัติให้อัตโนมัติเมื่ออ่านได้</p>
+            <p>3. ระบบจะบันทึกค่าเข้าไปอัตโนมัติเมื่ออ่านได้</p>
           </div>
         </div>
 
@@ -200,13 +212,7 @@ export function AiScanForm({ elderlyId }: AiScanFormProps) {
 
           <label className="block space-y-2">
             <span className="text-sm font-bold text-slate-700">เลือกรูปหรือถ่ายรูปความดัน</span>
-            <Input
-              name="file"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              required
-            />
+            <Input name="file" type="file" accept="image/*" capture="environment" required />
           </label>
 
           <label className="block space-y-2">

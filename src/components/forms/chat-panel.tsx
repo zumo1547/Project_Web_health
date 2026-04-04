@@ -1,5 +1,6 @@
 "use client";
 
+import { readApiResponse } from "@/lib/client-image";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,8 +119,8 @@ export function ChatPanel({
           return;
         }
 
-        const result = (await response.json()) as ApiChatMessage[];
-        if (cancelled) {
+        const result = (await readApiResponse(response)) as ApiChatMessage[];
+        if (cancelled || !Array.isArray(result)) {
           return;
         }
 
@@ -153,21 +154,30 @@ export function ChatPanel({
 
     setError("");
 
-    const response = await fetch(`/api/elderly/${elderlyId}/chat`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+    let response: Response;
+    let result: unknown;
 
-    const result = await response.json();
+    try {
+      response = await fetch(`/api/elderly/${elderlyId}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      result = await readApiResponse(response);
+    } catch (submitError) {
+      console.error("CHAT_SUBMIT_ERROR", submitError);
+      setError("ส่งข้อความไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+      return;
+    }
 
     if (!response.ok) {
       setError(
-        typeof result.error === "string"
+        result && typeof result === "object" && "error" in result && typeof result.error === "string"
           ? result.error
-          : "ส่งข้อความไม่สำเร็จ กรุณาลองอีกครั้ง",
+          : "ส่งข้อความไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
       );
       return;
     }
@@ -209,10 +219,7 @@ export function ChatPanel({
           const isOwnMessage = message.senderId === currentUserId;
 
           return (
-            <div
-              key={message.id}
-              className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
-            >
+            <div key={message.id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[92%] rounded-[1.6rem] px-4 py-4 shadow-sm sm:max-w-[85%] ${
                   isOwnMessage ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-900"

@@ -79,7 +79,14 @@ export async function POST(req: Request, context: RouteContext) {
       },
     });
 
-    return Response.json(created, { status: 201 });
+    return Response.json(
+      {
+        id: created.id,
+        label: created.label,
+        uploadedAt: created.uploadedAt,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     const permissionResponse = permissionErrorToResponse(error);
     if (permissionResponse) return permissionResponse;
