@@ -39,22 +39,22 @@ export function SectionNav({
 
   return (
     <nav
-      className={`sticky top-3 z-30 mt-6 overflow-hidden rounded-[1.9rem] border px-2.5 py-2.5 backdrop-blur sm:mt-8 sm:px-4 sm:py-3 ${toneStyles[tone]}`}
+      className={`sticky top-3 z-30 mt-5 overflow-hidden rounded-[1.45rem] border px-2 py-2 backdrop-blur sm:mt-8 sm:rounded-[1.9rem] sm:px-4 sm:py-3 ${toneStyles[tone]}`}
       aria-label="Section navigation"
     >
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:pb-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 pr-1 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-3">
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`min-w-0 rounded-[1.2rem] border px-3 py-3 transition sm:min-w-[11rem] sm:shrink-0 sm:rounded-[1.35rem] sm:px-4 ${linkToneStyles[tone]}`}
+            className={`min-w-[9.5rem] shrink-0 snap-start rounded-[1.1rem] border px-3.5 py-3 transition sm:min-w-[11rem] sm:rounded-[1.35rem] sm:px-4 ${linkToneStyles[tone]}`}
           >
             {item.eyebrow ? (
-              <p className="text-[0.62rem] font-bold uppercase tracking-[0.18em] opacity-70 sm:text-[0.68rem]">
+              <p className="hidden text-[0.68rem] font-bold uppercase tracking-[0.18em] opacity-70 sm:block">
                 {item.eyebrow}
               </p>
             ) : null}
-            <p className="mt-1 text-sm font-bold leading-6 sm:text-base">{item.label}</p>
+            <p className="text-sm font-bold leading-6 sm:mt-1 sm:text-base">{item.label}</p>
           </Link>
         ))}
       </div>
