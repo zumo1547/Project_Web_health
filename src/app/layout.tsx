@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Sarabun } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const sarabun = Sarabun({
@@ -35,7 +36,10 @@ export default function RootLayout({
       lang="th"
       className={`${sarabun.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
