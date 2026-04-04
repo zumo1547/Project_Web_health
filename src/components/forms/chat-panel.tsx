@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
 
 type UserRole = "ADMIN" | "DOCTOR" | "CAREGIVER" | "ELDERLY";
 
@@ -28,6 +28,19 @@ type ChatPanelProps = {
   notice?: string;
 };
 
+type ApiChatMessage = {
+  id: string;
+  content: string;
+  createdAt: string;
+  senderId: string;
+  senderRole: UserRole;
+  sender: {
+    id: string;
+    name: string;
+    role: UserRole;
+  };
+};
+
 const roleLabels: Record<UserRole, string> = {
   ADMIN: "แอดมิน",
   DOCTOR: "คุณหมอ",
@@ -40,6 +53,36 @@ function formatDate(value: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function mapApiMessageToView(message: ApiChatMessage): ChatMessageView {
+  return {
+    id: message.id,
+    content: message.content,
+    createdAt: message.createdAt,
+    senderId: message.sender.id ?? message.senderId,
+    senderName: message.sender.name,
+    senderRole: message.sender.role ?? message.senderRole,
+  };
+}
+
+function areMessagesEqual(left: ChatMessageView[], right: ChatMessageView[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((message, index) => {
+    const target = right[index];
+
+    return (
+      message.id === target.id &&
+      message.content === target.content &&
+      message.createdAt === target.createdAt &&
+      message.senderId === target.senderId &&
+      message.senderRole === target.senderRole &&
+      message.senderName === target.senderName
+    );
+  });
 }
 
 export function ChatPanel({
@@ -55,6 +98,50 @@ export function ChatPanel({
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [chatMessages, setChatMessages] = useState(messages);
+
+  useEffect(() => {
+    setChatMessages(messages);
+  }, [messages]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshMessages() {
+      try {
+        const response = await fetch(`/api/elderly/${elderlyId}/chat`, {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const result = (await response.json()) as ApiChatMessage[];
+        if (cancelled) {
+          return;
+        }
+
+        const nextMessages = result.map(mapApiMessageToView);
+        setChatMessages((current) =>
+          areMessagesEqual(current, nextMessages) ? current : nextMessages,
+        );
+      } catch (fetchError) {
+        console.error("CHAT_REFRESH_ERROR", fetchError);
+      }
+    }
+
+    void refreshMessages();
+    const timer = window.setInterval(() => {
+      void refreshMessages();
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [elderlyId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -85,6 +172,13 @@ export function ChatPanel({
       return;
     }
 
+    if (result && typeof result === "object" && "sender" in result && "id" in result) {
+      setChatMessages((current) => [
+        ...current,
+        mapApiMessageToView(result as ApiChatMessage),
+      ]);
+    }
+
     form.reset();
     startTransition(() => {
       router.refresh();
@@ -105,13 +199,13 @@ export function ChatPanel({
       ) : null}
 
       <div className="mt-6 space-y-3">
-        {messages.length === 0 ? (
+        {chatMessages.length === 0 ? (
           <p className="rounded-[1.6rem] bg-slate-50 px-4 py-5 text-base leading-7 text-slate-500">
             {emptyMessage}
           </p>
         ) : null}
 
-        {messages.map((message) => {
+        {chatMessages.map((message) => {
           const isOwnMessage = message.senderId === currentUserId;
 
           return (

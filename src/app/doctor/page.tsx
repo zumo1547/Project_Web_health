@@ -3,6 +3,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { DoctorCaseActionButton } from "@/components/dashboard/doctor-case-action-button";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { Badge } from "@/components/ui/badge";
+import { AutoRefresh } from "@/components/ui/auto-refresh";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { CaseStatus, DoctorCaseStatus, Role } from "@/generated/prisma";
 import { getBloodPressureAssessment } from "@/lib/health-presenters";
@@ -155,6 +156,8 @@ export default async function DoctorPage() {
       subtitle="ดูคิวรอรับเคส เปิดแฟ้มย้อนหลัง อ่านข้อความที่ผู้สูงอายุทักมา และสลับดูแลหลายเคสพร้อมกันได้อย่างเป็นระเบียบ"
       user={session.user}
     >
+      <AutoRefresh intervalMs={5000} />
+
       <Card className="mb-6 border-cyan-100 bg-[linear-gradient(180deg,rgba(240,249,255,0.98)_0%,rgba(248,250,252,0.96)_100%)]">
         <div className="space-y-3">
           <CardTitle>ภาพรวมการทำงานของคุณหมอ</CardTitle>

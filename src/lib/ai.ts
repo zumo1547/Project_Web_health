@@ -1,5 +1,6 @@
 import { AiScanType, CaseStatus } from "@/generated/prisma";
 import { getBloodPressureAssessment } from "@/lib/health-presenters";
+import { existsSync } from "fs";
 import path from "path";
 import sharp from "sharp";
 
@@ -185,18 +186,29 @@ async function recognizeTextFromImage(imageBuffer?: Buffer) {
 
   try {
     const { createWorker } = await import("tesseract.js");
-    const worker = await createWorker("eng", 1, {
-      workerPath: path.join(
-        process.cwd(),
-        "node_modules",
-        "tesseract.js",
-        "src",
-        "worker-script",
-        "node",
-        "index.js",
-      ),
-      cachePath: path.join(process.cwd(), ".cache", "tesseract"),
-    });
+    const bundledWorkerPath = path.join(
+      process.cwd(),
+      "node_modules",
+      "tesseract.js",
+      "src",
+      "worker-script",
+      "node",
+      "index.js",
+    );
+    const bundledLangPath = process.cwd();
+    const workerOptions: Record<string, unknown> = {
+      cacheMethod: "none",
+    };
+
+    if (existsSync(bundledWorkerPath)) {
+      workerOptions.workerPath = bundledWorkerPath;
+    }
+
+    if (existsSync(path.join(bundledLangPath, "eng.traineddata"))) {
+      workerOptions.langPath = bundledLangPath;
+    }
+
+    const worker = await createWorker("eng", 1, workerOptions);
 
     try {
       const candidateBuffers = await buildOcrCandidates(imageBuffer);

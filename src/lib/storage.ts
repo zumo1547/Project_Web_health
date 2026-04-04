@@ -2,6 +2,7 @@ import { del, put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 const MIME_EXTENSIONS: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -22,6 +23,49 @@ function getFileExtension(file: File) {
 
 function sanitizeSegment(value: string) {
   return value.replace(/[^a-zA-Z0-9/-]/g, "-").replace(/-+/g, "-");
+}
+
+function isVercelRuntime() {
+  return (
+    process.env.VERCEL === "1" ||
+    Boolean(process.env.VERCEL_ENV) ||
+    Boolean(process.env.VERCEL_URL)
+  );
+}
+
+async function createInlineImageDataUrl(buffer: Buffer, file: File) {
+  const mimeType = file.type || "application/octet-stream";
+
+  try {
+    if (mimeType.startsWith("image/")) {
+      const optimized = await sharp(buffer)
+        .rotate()
+        .resize({
+          width: 1600,
+          height: 1600,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({
+          quality: 82,
+        })
+        .toBuffer();
+
+      return {
+        url: `data:image/webp;base64,${optimized.toString("base64")}`,
+        fileName: `${randomUUID()}.webp`,
+        driver: "inline-data" as const,
+      };
+    }
+  } catch (error) {
+    console.error("INLINE_UPLOAD_OPTIMIZE_ERROR", error);
+  }
+
+  return {
+    url: `data:${mimeType};base64,${buffer.toString("base64")}`,
+    fileName: `${randomUUID()}${getFileExtension(file)}`,
+    driver: "inline-data" as const,
+  };
 }
 
 export async function storeUpload(file: File, folder: string) {
@@ -45,6 +89,10 @@ export async function storeUpload(file: File, folder: string) {
     };
   }
 
+  if (isVercelRuntime()) {
+    return createInlineImageDataUrl(buffer, file);
+  }
+
   const targetDir = path.join(process.cwd(), "public", "uploads", safeFolder);
   await mkdir(targetDir, { recursive: true });
 
@@ -62,6 +110,12 @@ export async function removeStoredUpload(url: string) {
   if (!url) {
     return {
       driver: "unknown" as const,
+    };
+  }
+
+  if (url.startsWith("data:")) {
+    return {
+      driver: "inline-data" as const,
     };
   }
 
