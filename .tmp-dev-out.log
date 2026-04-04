@@ -1,0 +1,10 @@
+
+> elderly-care-ai@0.1.0 dev
+> next dev --hostname 0.0.0.0
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://0.0.0.0:3001
+- Environments: .env
+✓ Ready in 520ms
+[?25h
