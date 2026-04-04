@@ -255,3 +255,64 @@ docker compose down -v
 - [Prisma ORM](https://www.prisma.io/docs/orm)
 - [Prisma v7 upgrade guide](https://docs.prisma.io/docs/guides/upgrade-prisma-orm/v7)
 - [Vercel Blob](https://vercel.com/docs/vercel-blob)
+
+## Neon Quick Setup
+
+Use this when you already connected Neon to Vercel and only want the shortest path to make the app work.
+
+### 1. Vercel Environment Variables
+
+Make sure these keys exist in Vercel:
+
+- `DATABASE_URL`
+- `AUTH_SECRET`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL`
+- `APP_URL`
+
+Optional for production image uploads:
+
+- `BLOB_READ_WRITE_TOKEN`
+
+### 2. Local file for Prisma commands
+
+Create `.env.local` from `.env.local.neon.example`
+
+```bash
+copy .env.local.neon.example .env.local
+```
+
+Put your Neon non-pooling URL into `.env.local`:
+
+```env
+DATABASE_URL_UNPOOLED="postgresql://..."
+```
+
+### 3. Push schema to Neon
+
+```bash
+npm run db:push:neon
+```
+
+This script automatically prefers `DATABASE_URL_UNPOOLED` and is safer for Prisma CLI commands.
+
+### 4. Create the first admin account
+
+```bash
+npm run db:create-admin
+```
+
+Default admin created by the script:
+
+```txt
+email: admin@eldercare.local
+password: Admin12345!
+```
+
+You can override these in `.env.local`:
+
+```env
+ADMIN_EMAIL="your-admin@example.com"
+ADMIN_PASSWORD="YourStrongPassword123!"
+ADMIN_NAME="System Admin"
+```
