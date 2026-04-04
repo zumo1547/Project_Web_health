@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   title: "Senior Health Check",
   description:
     "แอปตรวจสุขภาพสำหรับผู้สูงอายุ พร้อมบันทึกความดัน สแกนยา สรุปสุขภาพด้วย AI และติดตามอาการร่วมกับคุณหมอ",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({
