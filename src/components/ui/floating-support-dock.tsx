@@ -53,24 +53,6 @@ function FloatingIcon({ icon }: { icon: FloatingSupportItem["icon"] }) {
   );
 }
 
-function getSupportMeta(icon: FloatingSupportItem["icon"]) {
-  if (icon === "doctor") {
-    return {
-      eyebrow: "ห้องแชทกับคุณหมอ",
-      headline: "คุยกับคุณหมอที่ดูแลเคส",
-      helper: "ใช้ส่งอาการ ผลตรวจ หรือคำถามให้คุณหมอช่วยดูต่อได้ทันที",
-      badge: "ดูแลโดยทีมแพทย์",
-    };
-  }
-
-  return {
-    eyebrow: "ผู้ช่วย AI สุขภาพ",
-    headline: "คุยกับ AI เรื่องยาและความดัน",
-    helper: "ใช้ถามเรื่องยา ค่าความดัน และขอให้ AI ช่วยสรุปข้อมูลสุขภาพล่าสุด",
-    badge: "ตอบจากข้อมูลในแฟ้ม",
-  };
-}
-
 export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -86,34 +68,22 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
   return (
     <>
       <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
-        {items.map((item) => {
-          const meta = getSupportMeta(item.icon);
-
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setActiveId(item.id)}
-              className="floating-dock-button motion-button group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:max-w-[20rem] sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
-            >
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300 sm:h-11 sm:w-11">
-                <FloatingIcon icon={item.icon} />
-              </span>
-
-              <span className="hidden min-w-0 sm:block">
-                <span className="block text-[0.68rem] font-bold uppercase tracking-[0.16em] text-emerald-200/80">
-                  {meta.eyebrow}
-                </span>
-                <span className="mt-1 block text-sm font-black text-white">
-                  {meta.headline}
-                </span>
-                <span className="mt-1 block text-xs leading-5 text-slate-300">
-                  {meta.helper}
-                </span>
-              </span>
-            </button>
-          );
-        })}
+        {items.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setActiveId(item.id)}
+            className="floating-dock-button motion-button group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300 sm:h-11 sm:w-11">
+              <FloatingIcon icon={item.icon} />
+            </span>
+            <span className="hidden min-w-0 sm:block">
+              <span className="block text-sm font-bold">{item.label}</span>
+              <span className="block text-xs text-slate-300">{item.description}</span>
+            </span>
+          </button>
+        ))}
       </div>
 
       {activeItem ? (
@@ -127,22 +97,12 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
 
           <div className="floating-panel-enter absolute inset-x-0 bottom-0 mx-auto max-h-[82vh] w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,252,0.98)_100%)] shadow-[0_30px_80px_-34px_rgba(15,23,42,0.5)] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:max-h-[calc(100vh-5rem)] sm:rounded-[2rem]">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
                   <FloatingIcon icon={activeItem.icon} />
-                  <span>{getSupportMeta(activeItem.icon).eyebrow}</span>
+                  <span>{activeItem.label}</span>
                 </div>
-                <div>
-                  <p className="text-lg font-black tracking-tight text-slate-950">
-                    {getSupportMeta(activeItem.icon).headline}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {getSupportMeta(activeItem.icon).helper}
-                  </p>
-                </div>
-                <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                  {getSupportMeta(activeItem.icon).badge}
-                </div>
+                <p className="text-sm text-slate-500">{activeItem.description}</p>
               </div>
 
               <Button type="button" variant="ghost" onClick={() => setActiveId(null)}>
