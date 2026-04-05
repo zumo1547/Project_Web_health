@@ -82,6 +82,10 @@ model ElderlyProfile {
   allergies         String?
   chronicDiseases   String?
   notes             String?
+  lastKnownLatitude Float?
+  lastKnownLongitude Float?
+  lastKnownLocationLabel String?
+  lastKnownLocationUpdatedAt DateTime?
   caseStatus        CaseStatus          @default(SELF_SERVICE)
   doctorRequestNote String?
   doctorRequestedAt DateTime?

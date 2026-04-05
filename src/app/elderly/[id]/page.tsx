@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { ChatPanel } from "@/components/forms/chat-panel";
+import { DoctorHospitalSharePanel } from "@/components/forms/doctor-hospital-share-panel";
 import { ElderlyProfileSettingsForm } from "@/components/forms/elderly-profile-settings-form";
 import { RecordDeleteButton } from "@/components/forms/record-delete-button";
 import { Badge } from "@/components/ui/badge";
@@ -163,6 +164,9 @@ export default async function ElderlyDetailPage({
   const latestPatientMessage = [...elderly.chatMessages]
     .reverse()
     .find((message) => message.senderRole === Role.ELDERLY);
+  const canShareNearbyHospitals =
+    canUseCaseChat &&
+    (session.user.role === Role.ADMIN || session.user.role === Role.DOCTOR);
   const backHref =
     portal === "admin" ? "/admin" : portal === "doctor" ? "/doctor" : "/elderly-portal";
   const backLabel =
@@ -428,6 +432,21 @@ export default async function ElderlyDetailPage({
         </div>
 
         <div className="space-y-6">
+          {canShareNearbyHospitals ? (
+            <section id="hospital-guidance">
+              <DoctorHospitalSharePanel
+                elderlyId={elderly.id}
+                patientName={`${elderly.firstName} ${elderly.lastName}`.trim()}
+                savedLocation={{
+                  latitude: elderly.lastKnownLatitude,
+                  longitude: elderly.lastKnownLongitude,
+                  label: elderly.lastKnownLocationLabel,
+                  updatedAt: elderly.lastKnownLocationUpdatedAt?.toISOString() ?? null,
+                }}
+              />
+            </section>
+          ) : null}
+
           {canUseCaseChat ? (
             <ChatPanel
               elderlyId={elderly.id}

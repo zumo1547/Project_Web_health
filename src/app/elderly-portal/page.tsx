@@ -7,6 +7,7 @@ import { BloodPressureForm } from "@/components/forms/blood-pressure-form";
 import { CaseRequestPanel } from "@/components/forms/case-request-panel";
 import { ChatPanel } from "@/components/forms/chat-panel";
 import { MedicineUploadForm } from "@/components/forms/medicine-upload-form";
+import { NearbyHospitalsPanel } from "@/components/forms/nearby-hospitals-panel";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { FloatingSupportDock } from "@/components/ui/floating-support-dock";
 import { DoctorCaseStatus, Role } from "@/generated/prisma";
@@ -371,6 +372,19 @@ export default async function ElderlyPortalPage() {
             </div>
           </div>
         </Card>
+      </section>
+
+      <section id="hospitals" className="mt-5 grid gap-5">
+        <NearbyHospitalsPanel
+          elderlyId={elderly.id}
+          profileName={elderly.firstName}
+          savedLocation={{
+            latitude: elderly.lastKnownLatitude,
+            longitude: elderly.lastKnownLongitude,
+            label: elderly.lastKnownLocationLabel,
+            updatedAt: elderly.lastKnownLocationUpdatedAt?.toISOString() ?? null,
+          }}
+        />
       </section>
 
       <section id="scan" className="mt-5 grid gap-5">
