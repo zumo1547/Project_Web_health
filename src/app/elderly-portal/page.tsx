@@ -144,6 +144,7 @@ export default async function ElderlyPortalPage() {
         { href: "#medicine", label: "เรื่องยา", eyebrow: "Medicine" },
         { href: "#pressure", label: "ความดัน", eyebrow: "Pressure" },
         { href: "#history", label: "ย้อนหลัง", eyebrow: "History" },
+        { href: "#map", label: "แผนที่", eyebrow: "Map" },
       ]}
       actions={
         <Link
@@ -346,59 +347,59 @@ export default async function ElderlyPortalPage() {
         </div>
       </section>
 
-      <section id="history" className="mt-6 grid gap-5 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
-        <div className="grid gap-5">
-          <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-            <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
-            <div className="mt-5 space-y-4">
-              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                  ความดันล่าสุด
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestBloodPressure
-                    ? `${latestBloodPressure.systolic}/${latestBloodPressure.diastolic} mmHg วัดเมื่อ ${formatDate(latestBloodPressure.measuredAt)}`
-                    : "ยังไม่มีการบันทึกความดันในแฟ้ม"}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                  ผล AI ล่าสุด
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestAiScan?.summary ?? "ยังไม่มีผลวิเคราะห์ล่าสุด"}
-                </p>
-              </div>
-              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                  รูปยาล่าสุด
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestMedicine?.label ?? "ยังไม่มีรูปยาในแฟ้ม"}
-                </p>
-              </div>
+      <section id="history" className="mt-6 grid gap-5 xl:grid-cols-2 xl:items-start">
+        <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
+          <div className="mt-5 space-y-4">
+            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                ความดันล่าสุด
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-700">
+                {latestBloodPressure
+                  ? `${latestBloodPressure.systolic}/${latestBloodPressure.diastolic} mmHg วัดเมื่อ ${formatDate(latestBloodPressure.measuredAt)}`
+                  : "ยังไม่มีการบันทึกความดันในแฟ้ม"}
+              </p>
             </div>
-          </Card>
-
-          <Card className="border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.96)_100%)]">
-            <CardTitle>ดูย้อนหลังทั้งหมด</CardTitle>
-            <CardDescription className="mt-2">
-              ถ้าต้องการดูประวัติเต็มแบบเรียงตามเวลา เปิดแฟ้มสุขภาพเพื่อดูรูปยา ความดัน และข้อความทั้งหมดในที่เดียว
-            </CardDescription>
-            <div className="mt-6 space-y-4">
-              <Link
-                href={`/elderly/${elderly.id}`}
-                className="inline-flex min-h-[3.5rem] w-full items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
-              >
-                เปิดแฟ้มสุขภาพเต็ม
-              </Link>
-              <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
-                คุณสามารถเปิดดูประวัติย้อนหลังทั้งหมดได้จากแฟ้มเดียว ไม่ว่าจะเป็นรูปยา ผล AI ความดัน หรือสรุปการพูดคุยที่ผ่านมา
-              </div>
+            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                ผล AI ล่าสุด
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-700">
+                {latestAiScan?.summary ?? "ยังไม่มีผลวิเคราะห์ล่าสุด"}
+              </p>
             </div>
-          </Card>
-        </div>
+            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                รูปยาล่าสุด
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-700">
+                {latestMedicine?.label ?? "ยังไม่มีรูปยาในแฟ้ม"}
+              </p>
+            </div>
+          </div>
+        </Card>
 
+        <Card className="border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.96)_100%)]">
+          <CardTitle>ดูย้อนหลังทั้งหมด</CardTitle>
+          <CardDescription className="mt-2">
+            ถ้าต้องการดูประวัติเต็มแบบเรียงตามเวลา เปิดแฟ้มสุขภาพเพื่อดูรูปยา ความดัน และข้อความทั้งหมดในที่เดียว
+          </CardDescription>
+          <div className="mt-6 space-y-4">
+            <Link
+              href={`/elderly/${elderly.id}`}
+              className="inline-flex min-h-[3.5rem] w-full items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
+            >
+              เปิดแฟ้มสุขภาพเต็ม
+            </Link>
+            <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+              คุณสามารถเปิดดูประวัติย้อนหลังทั้งหมดได้จากแฟ้มเดียว ไม่ว่าจะเป็นรูปยา ผล AI ความดัน หรือสรุปการพูดคุยที่ผ่านมา
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      <section id="map" className="mt-6">
         <NearbyHospitalsPanel
           elderlyId={elderly.id}
           profileName={elderly.firstName}

@@ -218,7 +218,7 @@ export function NearbyHospitalsPanel({
   const totalHospitals = data?.hospitals.length ?? 0;
   const displayedHospitals = showAllHospitals
     ? data?.hospitals ?? []
-    : (data?.hospitals ?? []).slice(0, 4);
+    : (data?.hospitals ?? []).slice(0, 3);
 
   return (
     <Card className="border-sky-100 bg-[linear-gradient(135deg,rgba(239,246,255,0.98)_0%,rgba(255,255,255,0.97)_100%)]">
@@ -257,7 +257,7 @@ export function NearbyHospitalsPanel({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,0.3fr)_minmax(0,0.7fr)]">
         <div className="space-y-4">
           <div className="rounded-[1.45rem] border border-cyan-100 bg-white/90 p-4">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -277,8 +277,18 @@ export function NearbyHospitalsPanel({
             </p>
           </div>
 
-          <div className="rounded-[1.45rem] border border-slate-100 bg-white/80 p-4 text-sm leading-7 text-slate-600">
+          <div className="hidden rounded-[1.45rem] border border-slate-100 bg-white/80 p-4 text-sm leading-7 text-slate-600">
             ใช้ส่วนนี้เมื่อรู้สึกไม่สบาย เวียนหัว ความดันสูง หรืออยากดูว่าตอนนี้ควรไปโรงพยาบาลที่ใกล้ที่สุดที่ไหน
+          </div>
+
+          <div className="rounded-[1.45rem] border border-slate-100 bg-white/84 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+              ตัวอย่างการใช้แผนที่
+            </p>
+            <div className="mt-3 space-y-3 text-sm leading-7 text-slate-600">
+              <p>1. เวียนหัวหรือหน้ามืด ให้กดเปิดเส้นทางไปโรงพยาบาลที่ใกล้ที่สุดก่อน</p>
+              <p>2. ถ้าคุณหมอแนะนำให้ไปพบแพทย์ทันที ให้เลือกโรงพยาบาลแล้วกดนำทางได้เลย</p>
+            </div>
           </div>
 
           {error ? (
@@ -326,7 +336,7 @@ export function NearbyHospitalsPanel({
                 src={mapEmbedUrl}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className="h-[15rem] w-full border-0 sm:h-[17rem] lg:h-[18rem]"
+                className="h-[12rem] w-full border-0 sm:h-[13.5rem] lg:h-[15rem]"
               />
             </div>
           ) : (
@@ -347,7 +357,7 @@ export function NearbyHospitalsPanel({
                   </p>
                 </div>
 
-                {totalHospitals > 4 ? (
+                {totalHospitals > 3 ? (
                   <button
                     type="button"
                     onClick={() => setShowAllHospitals((currentValue) => !currentValue)}
