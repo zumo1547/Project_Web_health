@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+const prismaCommand = "npx";
+
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) {
     return;
@@ -55,7 +57,7 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-const child = spawn("npx", ["prisma", "db", "push"], {
+const child = spawn(prismaCommand, ["prisma", "db", "push"], {
   cwd: projectRoot,
   stdio: "inherit",
   shell: true,
