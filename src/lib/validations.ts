@@ -82,6 +82,14 @@ export const medicineUploadSchema = z.object({
   label: optionalString,
 });
 
+export const nearbyHospitalLookupSchema = z.object({
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  label: optionalString,
+  persist: z.boolean().optional().default(true),
+  radiusKm: z.number().min(1).max(20).optional().default(8),
+});
+
 export const adminUserRoleSchema = z.object({
   role: z.enum([Role.ADMIN, Role.DOCTOR, Role.ELDERLY]),
 });

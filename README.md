@@ -51,6 +51,7 @@ Open [http://localhost:3000](http://localhost:3000)
 1. Connect a PostgreSQL database such as Neon.
 2. Add these environment variables in Vercel:
    - `DATABASE_URL`
+   - `DATABASE_URL_UNPOOLED` or `POSTGRES_URL_NON_POOLING`
    - `AUTH_SECRET`
    - `NEXTAUTH_SECRET`
    - `NEXTAUTH_URL`
@@ -63,6 +64,8 @@ Open [http://localhost:3000](http://localhost:3000)
 npm run db:push:neon
 npm run db:create-admin
 ```
+
+The Vercel build step now syncs the Prisma schema before running `next build`, so production stays aligned with the deployed code as long as a non-pooling database URL is available.
 
 ## Important Notes
 
