@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type FloatingSupportItem = {
   id: string;
@@ -55,17 +56,18 @@ function FloatingIcon({ icon }: { icon: FloatingSupportItem["icon"] }) {
 
 export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const canUseDOM = typeof window !== "undefined" && typeof document !== "undefined";
 
   const activeItem = useMemo(
     () => items.find((item) => item.id === activeId) ?? null,
     [activeId, items],
   );
 
-  if (!items.length) {
+  if (!items.length || !canUseDOM) {
     return null;
   }
 
-  return (
+  return createPortal(
     <>
       <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
         {items.map((item) => (
@@ -116,6 +118,7 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
           </div>
         </div>
       ) : null}
-    </>
+    </>,
+    document.body,
   );
 }
