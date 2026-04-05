@@ -135,16 +135,15 @@ export default async function ElderlyPortalPage() {
   return (
     <AppShell
       portal="elderly"
-      title={`ศูนย์ตรวจสุขภาพของ ${elderly.firstName}`}
-      subtitle="ใช้งานจากหน้าเดียวได้ทั้งตรวจยา บันทึกความดัน ขอคำแนะนำจาก AI และติดต่อคุณหมอ โดยจัดปุ่มสำคัญไว้ให้อยู่ใกล้มือและอ่านง่ายขึ้น"
+      title={`สุขภาพของ ${elderly.firstName}`}
+      subtitle="เริ่มจาก 3 อย่างหลักก่อน คือ สแกนยา บันทึกความดัน และขอความช่วยเหลือ ส่วนประวัติย้อนหลังและโรงพยาบาลใกล้ฉันอยู่ด้านล่าง"
       user={session.user}
       navigation={[
-        { href: "#overview", label: "ภาพรวมวันนี้", eyebrow: "Home" },
-        { href: "#actions", label: "เริ่มใช้งานเร็ว", eyebrow: "Quick" },
-        { href: "#support", label: "ศูนย์ช่วยเหลือ", eyebrow: "Support" },
-        { href: "#scan", label: "สแกนยาและบันทึกรูป", eyebrow: "Scan" },
-        { href: "#blood-pressure", label: "ความดัน", eyebrow: "Pressure" },
-        { href: "#history", label: "แฟ้มย้อนหลัง", eyebrow: "Record" },
+        { href: "#today", label: "วันนี้", eyebrow: "Today" },
+        { href: "#help", label: "ขอความช่วยเหลือ", eyebrow: "Help" },
+        { href: "#medicine", label: "เรื่องยา", eyebrow: "Medicine" },
+        { href: "#pressure", label: "ความดัน", eyebrow: "Pressure" },
+        { href: "#history", label: "ย้อนหลัง", eyebrow: "History" },
       ]}
       actions={
         <Link
@@ -155,39 +154,25 @@ export default async function ElderlyPortalPage() {
         </Link>
       }
     >
-      <section id="overview" className="grid gap-6 xl:grid-cols-[1.18fr_0.82fr]">
+      <section id="today" className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
         <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(240,253,244,0.96)_100%)]">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                ประจำวัน
-              </div>
-              <CardTitle>ศูนย์สั่งงานสุขภาพวันนี้</CardTitle>
-              <CardDescription>
-                เริ่มจากการสแกนยา ตรวจค่าความดัน หรือเปิดแชทช่วยเหลือได้จากหน้านี้ทันที โดยไม่ต้องเลื่อนหาปุ่มหลายรอบ
-              </CardDescription>
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/85 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              เริ่มจากตรงนี้
             </div>
 
-            <div className="rounded-[1.6rem] border border-emerald-100 bg-white/85 px-4 py-4 text-sm leading-7 text-slate-600">
-              <p className="font-bold text-slate-900">สถานะล่าสุด</p>
-              <p className="mt-2">
-                {latestBloodPressure
-                  ? `วัดความดันล่าสุดเมื่อ ${formatDate(latestBloodPressure.measuredAt)}`
-                  : "ยังไม่มีการวัดความดันในวันนี้"}
-              </p>
-              <p className="mt-1">
-                {latestDoctor
-                  ? `มีคุณหมอดูแลอยู่: ${latestDoctor.name}`
-                  : "ยังไม่มีคุณหมอดูแล สามารถกดขอรับเคสได้ในศูนย์ช่วยเหลือ"}
-              </p>
-            </div>
+            <CardTitle>ทำ 3 อย่างนี้ก่อนในแต่ละวัน</CardTitle>
+            <CardDescription>
+              ถ้าต้องการใช้งานแบบง่าย ให้กดตามลำดับนี้ก่อน ระบบจะช่วยให้ดูยา ค่าความดัน
+              และขอความช่วยเหลือได้โดยไม่ต้องหาปุ่มหลายรอบ
+            </CardDescription>
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <Link
-              href="#scan"
-              className="rounded-[1.85rem] border border-white/80 bg-white/88 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
+              href="#medicine"
+              className="rounded-[1.85rem] border border-white/80 bg-white/92 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
             >
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
                 ขั้นที่ 1
@@ -196,46 +181,46 @@ export default async function ElderlyPortalPage() {
                 สแกนยา
               </p>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                ถ่ายจากกล้องหรือเลือกรูปจากคลังให้ AI ช่วยดูว่าเป็นยาอะไร
+                ถ่ายรูปหรือเลือกรูปยา แล้วให้ AI ช่วยบอกว่ายานี้คืออะไร
               </p>
             </Link>
 
             <Link
-              href="#blood-pressure"
-              className="rounded-[1.85rem] border border-white/80 bg-white/88 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
+              href="#pressure"
+              className="rounded-[1.85rem] border border-white/80 bg-white/92 px-5 py-5 shadow-[0_22px_45px_-34px_rgba(15,23,42,0.24)] transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:bg-white"
             >
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
                 ขั้นที่ 2
               </p>
               <p className="mt-3 text-xl font-black tracking-tight text-slate-950">
-                บันทึกความดัน
+                วัดความดัน
               </p>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                ใส่ค่าด้วยตัวเองหรือสแกนจากรูปเครื่องวัด แล้วให้ระบบช่วยประเมิน
+                กรอกค่าด้วยตัวเองหรือใช้รูปจากเครื่องวัดให้ระบบช่วยประเมิน
               </p>
             </Link>
 
             <Link
-              href="#support"
+              href="#help"
               className="rounded-[1.85rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(15,118,110,0.95)_0%,rgba(5,150,105,0.92)_100%)] px-5 py-5 text-white shadow-[0_24px_52px_-34px_rgba(5,150,105,0.55)] transition duration-200 hover:-translate-y-1 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(13,148,136,0.96)_0%,rgba(5,150,105,0.94)_100%)]"
             >
               <p className="text-sm font-bold uppercase tracking-[0.14em] text-emerald-50">
                 ขั้นที่ 3
               </p>
               <p className="mt-3 text-xl font-black tracking-tight text-white">
-                ขอคำแนะนำต่อ
+                ขอความช่วยเหลือ
               </p>
               <p className="mt-2 text-sm leading-7 text-emerald-50/90">
-                ใช้ปุ่มลอยมุมขวาล่างเพื่อเปิดแชท AI หรือทักหาคุณหมอได้ทันที
+                ถ้ามีอาการผิดปกติหรืออยากถามเพิ่ม ให้คุยกับ AI หรือคุณหมอได้ทันที
               </p>
             </Link>
           </div>
         </Card>
 
-        <div className="grid gap-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+        <div className="grid gap-5">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
             <SummaryCard
-              label="ค่าความดันล่าสุด"
+              label="ความดันล่าสุด"
               value={
                 latestBloodPressure
                   ? `${latestBloodPressure.systolic}/${latestBloodPressure.diastolic}`
@@ -257,23 +242,27 @@ export default async function ElderlyPortalPage() {
           </div>
 
           <Card className="border-cyan-100 bg-[linear-gradient(135deg,rgba(240,249,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-            <CardTitle>สิ่งที่ระบบจำได้ล่าสุด</CardTitle>
-            <div className="mt-5 space-y-4">
+            <CardTitle>สรุปตอนนี้</CardTitle>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                  ผล AI ล่าสุด
+                  คุณหมอที่ดูแล
                 </p>
                 <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestAiScan?.summary ?? "ยังไม่มีผลวิเคราะห์จาก AI"}
+                  {latestDoctor
+                    ? latestDoctor.name
+                    : "ยังไม่มีคุณหมอดูแล สามารถกดขอรับเคสในหมวดขอความช่วยเหลือได้"}
                 </p>
               </div>
 
               <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
                 <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                  รูปยาล่าสุด
+                  สิ่งที่ระบบจำได้ล่าสุด
                 </p>
                 <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestMedicine?.label ?? "ยังไม่มีรูปยาในแฟ้ม"}
+                  {summarizeText(latestAiScan?.summary) ??
+                    latestMedicine?.label ??
+                    "ยังไม่มีผลสแกนหรือรูปยาล่าสุดในแฟ้ม"}
                 </p>
               </div>
             </div>
@@ -281,28 +270,7 @@ export default async function ElderlyPortalPage() {
         </div>
       </section>
 
-      <section id="actions" className="mt-6 grid gap-4 lg:grid-cols-3">
-        <SummaryCard
-          label="ประวัติความดัน"
-          value={String(elderly._count.bloodPressures)}
-          description="จำนวนรายการความดันที่บันทึกไว้ในระบบ"
-          tone="elderly"
-        />
-        <SummaryCard
-          label="รูปยาและผลสแกน"
-          value={`${elderly._count.medicineImages} / ${elderly._count.aiScans}`}
-          description="จำนวนรูปยาที่เก็บไว้และจำนวนผลวิเคราะห์จาก AI"
-          tone="elderly"
-        />
-        <SummaryCard
-          label="บทสนทนาช่วยเหลือ"
-          value={String(elderly._count.chatMessages + elderly._count.aiHealthMessages)}
-          description="รวมข้อความที่คุยกับคุณหมอและ AI ในแฟ้มนี้"
-          tone="elderly"
-        />
-      </section>
-
-      <section id="support" className="mt-6 grid items-start gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+      <section id="help" className="mt-6 grid items-start gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <CaseRequestPanel
           elderlyId={elderly.id}
           caseStatus={elderly.caseStatus}
@@ -312,29 +280,22 @@ export default async function ElderlyPortalPage() {
         />
 
         <Card className="border-cyan-100 bg-[linear-gradient(135deg,rgba(240,249,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-3">
-              <CardTitle>ศูนย์ช่วยเหลือ</CardTitle>
-              <CardDescription>
-                ใช้ปุ่มลอยมุมขวาล่างเพื่อเปิดแชท AI หรือทักหาคุณหมอได้ทันทีโดยไม่ทำให้หน้าหลักรก
-              </CardDescription>
-            </div>
-            <div className="rounded-full bg-white/85 px-4 py-2 text-sm font-bold text-slate-700">
-              แตะปุ่มลอยเพื่อเปิดแชท
-            </div>
-          </div>
+          <CardTitle>ขอความช่วยเหลือได้ 2 แบบ</CardTitle>
+          <CardDescription className="mt-2">
+            ใช้ปุ่มลอยมุมขวาล่างเมื่ออยากถามเรื่องยา ความดัน หรือส่งอาการให้คุณหมอดู
+          </CardDescription>
 
           <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="rounded-[1.7rem] border border-white/80 bg-white/88 p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.2)]">
               <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-cyan-700">
                 <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
-                AI สุขภาพ
+                ผู้ช่วย AI
               </div>
               <p className="mt-4 text-lg font-black tracking-tight text-slate-950">
-                ถามได้ตลอดเวลา
+                ถามเรื่องยาและความดัน
               </p>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                เหมาะกับการถามเรื่องยา ความดัน และขอให้ระบบสรุปข้อมูลล่าสุดให้แบบเข้าใจง่าย
+                เหมาะกับคำถามทั่วไป เช่น ยานี้ใช้ทำอะไร ความดันระดับนี้ควรระวังไหม หรือให้ช่วยสรุปข้อมูลสุขภาพล่าสุด
               </p>
               <div className="mt-4 rounded-[1.3rem] bg-slate-50 px-4 py-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -342,7 +303,7 @@ export default async function ElderlyPortalPage() {
                 </p>
                 <p className="mt-2 text-sm leading-7 text-slate-700">
                   {summarizeText(latestAiHealthMessage?.content) ??
-                    "ยังไม่มีบทสนทนากับ AI ในตอนนี้"}
+                    "ยังไม่มีการพูดคุยกับ AI ในตอนนี้"}
                 </p>
               </div>
             </div>
@@ -350,13 +311,13 @@ export default async function ElderlyPortalPage() {
             <div className="rounded-[1.7rem] border border-white/80 bg-white/88 p-5 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.2)]">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                ติดต่อคุณหมอ
+                ห้องแชทกับหมอ
               </div>
               <p className="mt-4 text-lg font-black tracking-tight text-slate-950">
-                ทักง่าย ไม่ต้องเลื่อนหาห้องแชท
+                ส่งอาการให้คุณหมอดู
               </p>
               <p className="mt-2 text-sm leading-7 text-slate-600">
-                ถ้าต้องการส่งอาการหรือขอให้คุณหมอช่วยดูผลตรวจ ใช้ปุ่มลอยเพื่อเปิดห้องแชทได้ทันที
+                ใช้เมื่อมีอาการผิดปกติ อยากส่งผลตรวจให้คุณหมอช่วยดู หรืออยากให้คุณหมอแนะนำต่อทันที
               </p>
               <div className="mt-4 rounded-[1.3rem] bg-slate-50 px-4 py-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -374,7 +335,96 @@ export default async function ElderlyPortalPage() {
         </Card>
       </section>
 
-      <section id="hospitals" className="mt-5 grid gap-5">
+      <section id="medicine" className="mt-6 grid gap-5">
+        <Card className="border-sky-100 bg-[linear-gradient(135deg,rgba(239,246,255,0.96)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>หมวดเรื่องยา</CardTitle>
+          <CardDescription className="mt-2">
+            ถ้าต้องการให้ระบบช่วยดูว่ายาคืออะไร ให้เริ่มจากสแกนยา ถ้าแค่อยากเก็บรูปยาไว้ก่อนให้ใช้บันทึกรูปยา
+          </CardDescription>
+        </Card>
+
+        <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
+          <AiScanForm elderlyId={elderly.id} />
+          <MedicineUploadForm elderlyId={elderly.id} />
+        </div>
+      </section>
+
+      <section id="pressure" className="mt-6 grid gap-5">
+        <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>หมวดความดัน</CardTitle>
+          <CardDescription className="mt-2">
+            ใช้ส่วนนี้เมื่อวัดความดันแล้ว ต้องการบันทึกค่า ดูผลประเมิน หรือดูแนวทางดูแลเบื้องต้น
+          </CardDescription>
+        </Card>
+
+        <div className="grid gap-5 xl:grid-cols-[1.02fr_0.98fr] xl:items-start">
+          <BloodPressureForm elderlyId={elderly.id} />
+
+          <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+            <CardTitle>แนวทางดูแลวันนี้</CardTitle>
+            <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
+              <p>1. นั่งพักก่อนวัดประมาณ 5 นาที แล้วค่อยบันทึกค่า</p>
+              <p>2. ถ้ามีรูปจากเครื่องวัดอยู่แล้ว ใช้ส่วนสแกนรูปความดันให้ระบบช่วยอ่านได้</p>
+              <p>3. ถ้าผลประเมินบอกว่าเริ่มสูงหรือผิดปกติ ให้กดปุ่มลอยทัก AI หรือคุณหมอทันที</p>
+              <p>4. ถ้ารู้สึกไม่สบายมาก ให้เลื่อนลงไปดูหมวดโรงพยาบาลใกล้ฉันได้ด้านล่าง</p>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      <section id="history" className="mt-6 grid gap-5 xl:grid-cols-[0.92fr_1.08fr] xl:items-start">
+        <div className="grid gap-5">
+          <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+            <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
+            <div className="mt-5 space-y-4">
+              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  ความดันล่าสุด
+                </p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  {latestBloodPressure
+                    ? `${latestBloodPressure.systolic}/${latestBloodPressure.diastolic} mmHg วัดเมื่อ ${formatDate(latestBloodPressure.measuredAt)}`
+                    : "ยังไม่มีการบันทึกความดันในแฟ้ม"}
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  ผล AI ล่าสุด
+                </p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  {latestAiScan?.summary ?? "ยังไม่มีผลวิเคราะห์ล่าสุด"}
+                </p>
+              </div>
+              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                  รูปยาล่าสุด
+                </p>
+                <p className="mt-2 text-sm leading-7 text-slate-700">
+                  {latestMedicine?.label ?? "ยังไม่มีรูปยาในแฟ้ม"}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.96)_100%)]">
+            <CardTitle>ดูย้อนหลังทั้งหมด</CardTitle>
+            <CardDescription className="mt-2">
+              ถ้าต้องการดูประวัติเต็มแบบเรียงตามเวลา เปิดแฟ้มสุขภาพเพื่อดูรูปยา ความดัน และข้อความทั้งหมดในที่เดียว
+            </CardDescription>
+            <div className="mt-6 space-y-4">
+              <Link
+                href={`/elderly/${elderly.id}`}
+                className="inline-flex min-h-[3.5rem] w-full items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
+              >
+                เปิดแฟ้มสุขภาพเต็ม
+              </Link>
+              <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+                คุณสามารถเปิดดูประวัติย้อนหลังทั้งหมดได้จากแฟ้มเดียว ไม่ว่าจะเป็นรูปยา ผล AI ความดัน หรือสรุปการพูดคุยที่ผ่านมา
+              </div>
+            </div>
+          </Card>
+        </div>
+
         <NearbyHospitalsPanel
           elderlyId={elderly.id}
           profileName={elderly.firstName}
@@ -387,84 +437,12 @@ export default async function ElderlyPortalPage() {
         />
       </section>
 
-      <section id="scan" className="mt-5 grid gap-5">
-        <AiScanForm elderlyId={elderly.id} />
-        <MedicineUploadForm elderlyId={elderly.id} />
-      </section>
-
-      <section id="blood-pressure" className="mt-5 grid gap-5">
-        <BloodPressureForm elderlyId={elderly.id} />
-
-        <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-          <CardTitle>แนวทางดูแลวันนี้</CardTitle>
-          <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
-            <p>1. ถ้าจะวัดความดัน ควรนั่งพักก่อนประมาณ 5 นาทีแล้วค่อยวัด</p>
-            <p>2. ถ้ามีรูปจากเครื่องวัดอยู่แล้ว สามารถใช้สแกนจากรูปหรือกรอกเองได้ตามสะดวก</p>
-            <p>3. ถ้าระบบสรุปว่าเริ่มสูงหรือผิดปกติ ให้ใช้ปุ่มลอยทัก AI หรือคุณหมอต่อได้ทันที</p>
-            <p>4. หากต้องการดูย้อนหลังทั้งหมด กดเปิดแฟ้มสุขภาพด้านบนเพื่อดูประวัติเต็ม</p>
-          </div>
-        </Card>
-      </section>
-
-      <section id="history" className="mt-5 grid gap-5">
-        <Card className="border-amber-100 bg-[linear-gradient(135deg,rgba(255,251,235,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-          <CardTitle>บันทึกล่าสุดในแฟ้ม</CardTitle>
-          <div className="mt-5 space-y-4">
-            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                ค่าความดันล่าสุด
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-700">
-                {latestBloodPressure
-                  ? `${latestBloodPressure.systolic}/${latestBloodPressure.diastolic} mmHg วัดเมื่อ ${formatDate(latestBloodPressure.measuredAt)}`
-                  : "ยังไม่มีการบันทึกความดันในแฟ้ม"}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                ผล AI ล่าสุด
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-700">
-                {latestAiScan?.summary ?? "ยังไม่มีผลวิเคราะห์ล่าสุด"}
-              </p>
-            </div>
-            <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
-                รูปยาล่าสุด
-              </p>
-              <p className="mt-2 text-sm leading-7 text-slate-700">
-                {latestMedicine?.label ?? "ยังไม่มีรูปยาในแฟ้ม"}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="border-slate-200 bg-[linear-gradient(135deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.96)_100%)]">
-          <CardTitle>แฟ้มสุขภาพย้อนหลัง</CardTitle>
-          <CardDescription className="mt-2">
-            ถ้าต้องการดูประวัติเต็มแบบเรียงตามเวลา เปิดแฟ้มสุขภาพเพื่อดูรูปยา ค่าความดัน และข้อความในเคสทั้งหมด
-          </CardDescription>
-          <div className="mt-6 space-y-4">
-            <Link
-              href={`/elderly/${elderly.id}`}
-              className="inline-flex min-h-[3.5rem] w-full items-center justify-center rounded-[1.45rem] border border-emerald-200 bg-[linear-gradient(135deg,rgba(236,253,245,0.98)_0%,rgba(255,255,255,0.98)_100%)] px-5 py-3 text-base font-bold text-emerald-900 shadow-[0_18px_40px_-28px_rgba(16,185,129,0.35)] transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-[linear-gradient(135deg,rgba(209,250,229,0.98)_0%,rgba(255,255,255,0.98)_100%)]"
-            >
-              เปิดแฟ้มสุขภาพเต็ม
-            </Link>
-            <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
-              คุณสามารถเปิดดูประวัติย้อนหลังทั้งหมดได้จากแฟ้มเดียว ไม่ว่าจะเป็นรูปยา ผล AI
-              ความดัน หรือสรุปการพูดคุยที่ผ่านมา
-            </div>
-          </div>
-        </Card>
-      </section>
-
       <FloatingSupportDock
         items={[
           {
             id: "ai-health",
-            label: "คุยกับ AI",
-            description: "ถามเรื่องยา ความดัน และสรุปข้อมูลสุขภาพ",
+            label: "ถาม AI",
+            description: "เรื่องยา ความดัน และสรุปสุขภาพ",
             icon: "ai",
             content: (
               <AiHealthChatPanel
@@ -481,7 +459,7 @@ export default async function ElderlyPortalPage() {
           {
             id: "doctor-chat",
             label: "ติดต่อหมอ",
-            description: "ส่งอาการหรือผลตรวจให้คุณหมอดูได้ทันที",
+            description: "ส่งอาการหรือผลตรวจให้คุณหมอดู",
             icon: "doctor",
             content: (
               <ChatPanel
