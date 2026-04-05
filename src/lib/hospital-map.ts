@@ -79,6 +79,20 @@ export function buildHospitalSearchUrl(latitude: number, longitude: number) {
   return `https://www.google.com/maps/search/hospital/@${latitude},${longitude},14z`;
 }
 
+export function buildHospitalEmbedUrl(latitude: number, longitude: number) {
+  const query = encodeURIComponent(`hospital near ${latitude},${longitude}`);
+  return `https://www.google.com/maps?q=${query}&z=14&output=embed`;
+}
+
+export function buildSpecificHospitalEmbedUrl(
+  latitude: number,
+  longitude: number,
+  name?: string,
+) {
+  const query = encodeURIComponent(name ? `${name} ${latitude},${longitude}` : `${latitude},${longitude}`);
+  return `https://www.google.com/maps?q=${query}&z=16&output=embed`;
+}
+
 function normalizeHospitalName(tags?: Record<string, string>) {
   return (
     tags?.name ||
