@@ -47,11 +47,11 @@ const mobileButtonToneStyles: Record<NonNullable<SectionNavProps["tone"]>, strin
 
 const drawerToneStyles: Record<NonNullable<SectionNavProps["tone"]>, string> = {
   doctor:
-    "border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.99)_0%,rgba(15,23,42,0.98)_100%)] text-white",
+    "border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.995)_0%,rgba(15,23,42,0.985)_100%)] text-white",
   elderly:
-    "border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.98)_100%)] text-slate-900",
+    "border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(248,250,252,0.985)_100%)] text-slate-900",
   admin:
-    "border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(255,251,235,0.98)_100%)] text-slate-900",
+    "border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(255,251,235,0.985)_100%)] text-slate-900",
 };
 
 const drawerLinkToneStyles: Record<NonNullable<SectionNavProps["tone"]>, string> =
@@ -145,15 +145,34 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.dataset.quickNavOpen = "true";
+    } else {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      delete document.body.dataset.quickNavOpen;
     }
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    window.dispatchEvent(
+      new CustomEvent("quick-nav-toggle", {
+        detail: { open: isOpen },
+      }),
+    );
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      delete document.body.dataset.quickNavOpen;
+      window.dispatchEvent(
+        new CustomEvent("quick-nav-toggle", {
+          detail: { open: false },
+        }),
+      );
     };
   }, [isOpen]);
 
@@ -206,18 +225,18 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
       </nav>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 sm:hidden">
+        <div className="fixed inset-0 z-[80] sm:hidden">
           <button
             type="button"
             aria-label="Close menu"
-            className="absolute inset-0 bg-slate-950/38 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-slate-950/42 backdrop-blur-[3px]"
             onClick={() => setIsOpen(false)}
           />
 
           <aside
-            className={`floating-panel-enter absolute inset-y-0 left-0 flex w-[min(82vw,21rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
+            className={`floating-panel-enter absolute inset-y-0 left-0 flex h-full w-[min(86vw,22rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-5 pb-4 pt-6">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 pb-4 pt-[max(env(safe-area-inset-top),1.5rem)]">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] opacity-60">
                   Quick navigation
@@ -236,11 +255,11 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
 
             <div className="px-5 pt-4">
               <div className="rounded-[1.35rem] border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 opacity-80">
-                เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนที่กดทันที
+                เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนนั้นทันที
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto px-4 py-4 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
               <div className="space-y-3">
                 {items.map((item, index) => (
                   <Link

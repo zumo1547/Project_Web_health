@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 
 type FloatingSupportItem = {
@@ -56,7 +56,40 @@ function FloatingIcon({ icon }: { icon: FloatingSupportItem["icon"] }) {
 
 export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const canUseDOM = typeof window !== "undefined" && typeof document !== "undefined";
+
+  useEffect(() => {
+    if (!canUseDOM) {
+      return;
+    }
+
+    const syncMenuState = () => {
+      const open = document.body.dataset.quickNavOpen === "true";
+      setMenuOpen(open);
+
+      if (open) {
+        setActiveId(null);
+      }
+    };
+
+    const handleToggle = (event: Event) => {
+      const detail = (event as CustomEvent<{ open?: boolean }>).detail;
+      const open = Boolean(detail?.open);
+      setMenuOpen(open);
+
+      if (open) {
+        setActiveId(null);
+      }
+    };
+
+    syncMenuState();
+    window.addEventListener("quick-nav-toggle", handleToggle as EventListener);
+
+    return () => {
+      window.removeEventListener("quick-nav-toggle", handleToggle as EventListener);
+    };
+  }, [canUseDOM]);
 
   const activeItem = useMemo(
     () => items.find((item) => item.id === activeId) ?? null,
@@ -69,7 +102,13 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
 
   return createPortal(
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
+      <div
+        className={`fixed bottom-4 right-4 flex flex-col gap-2.5 transition-[opacity,transform] duration-200 sm:bottom-6 sm:right-6 sm:gap-3 ${
+          menuOpen
+            ? "pointer-events-none z-30 translate-x-2 opacity-0 sm:pointer-events-auto sm:z-40 sm:translate-x-0 sm:opacity-100"
+            : "z-40 opacity-100"
+        }`}
+      >
         {items.map((item) => (
           <button
             key={item.id}
