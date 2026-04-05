@@ -39,7 +39,7 @@ function getLocationLabel() {
     return undefined;
   }
 
-  return "ตําแหน่งปัจจุบันจากมือถือหรือคอมพิวเตอร์";
+  return "ตำแหน่งปัจจุบันจากมือถือหรือคอมพิวเตอร์";
 }
 
 export function NearbyHospitalsPanel({
@@ -52,6 +52,7 @@ export function NearbyHospitalsPanel({
   const [data, setData] = useState<NearbyHospitalsResponse | null>(null);
   const [isLocating, setIsLocating] = useState(false);
   const [selectedHospitalId, setSelectedHospitalId] = useState<string | null>(null);
+  const [showAllHospitals, setShowAllHospitals] = useState(false);
 
   const hasSavedLocation = useMemo(
     () =>
@@ -80,6 +81,7 @@ export function NearbyHospitalsPanel({
           },
           20000,
         );
+
         const result = (await readApiResponse(response)) as NearbyHospitalsResponse & {
           error?: string;
         };
@@ -122,7 +124,7 @@ export function NearbyHospitalsPanel({
 
   function requestCurrentLocation() {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setError("อุปกรณ์นี้ยังไม่รองรับการแชร์ตําแหน่งปัจจุบัน");
+      setError("อุปกรณ์นี้ยังไม่รองรับการแชร์ตำแหน่งปัจจุบัน");
       return;
     }
 
@@ -149,6 +151,7 @@ export function NearbyHospitalsPanel({
             },
             20000,
           );
+
           const result = (await readApiResponse(response)) as NearbyHospitalsResponse & {
             error?: string;
           };
@@ -161,6 +164,7 @@ export function NearbyHospitalsPanel({
           setData(result);
           setWarning(result.warning ?? "");
           setSelectedHospitalId(result.hospitals[0]?.id ?? null);
+          setShowAllHospitals(false);
         } catch (locationError) {
           console.error("NEARBY_HOSPITALS_POST_ERROR", locationError);
           setError("ยังไม่สามารถค้นหาโรงพยาบาลใกล้ฉันได้");
@@ -170,7 +174,7 @@ export function NearbyHospitalsPanel({
       },
       (geolocationError) => {
         console.error("GEOLOCATION_ERROR", geolocationError);
-        setError("กรุณาอนุญาตตําแหน่งก่อน แล้วลองใหม่อีกครั้ง");
+        setError("กรุณาอนุญาตตำแหน่งก่อน แล้วลองใหม่อีกครั้ง");
         setIsLocating(false);
       },
       {
@@ -211,17 +215,22 @@ export function NearbyHospitalsPanel({
           ? buildHospitalEmbedUrl(savedLocation.latitude, savedLocation.longitude)
           : null;
 
+  const totalHospitals = data?.hospitals.length ?? 0;
+  const displayedHospitals = showAllHospitals
+    ? data?.hospitals ?? []
+    : (data?.hospitals ?? []).slice(0, 4);
+
   return (
-    <Card className="border-sky-100 bg-[linear-gradient(135deg,rgba(239,246,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+    <Card className="border-sky-100 bg-[linear-gradient(135deg,rgba(239,246,255,0.98)_0%,rgba(255,255,255,0.97)_100%)]">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-3">
+        <div className="max-w-2xl space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-cyan-700">
             <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
             Map Support
           </div>
           <CardTitle>โรงพยาบาลใกล้ฉัน</CardTitle>
           <CardDescription>
-            ใช้ตําแหน่งล่าสุดของ {profileName} เพื่อดูโรงพยาบาลใกล้ตัวและเปิดเส้นทางไปยังโรงพยาบาลได้ทันที
+            ใช้ตำแหน่งล่าสุดของ {profileName} เพื่อดูโรงพยาบาลใกล้ตัวและเปิดเส้นทางไปยังโรงพยาบาลได้ทันที
           </CardDescription>
         </div>
 
@@ -233,14 +242,14 @@ export function NearbyHospitalsPanel({
             disabled={isLocating}
             className="border border-slate-200 bg-white/85"
           >
-            {isLocating ? "กําลังอ่านตําแหน่ง..." : "ใช้ตําแหน่งปัจจุบัน"}
+            {isLocating ? "กำลังอ่านตำแหน่ง..." : "ใช้ตำแหน่งปัจจุบัน"}
           </Button>
           {fallbackMapUrl ? (
             <a
               href={fallbackMapUrl}
               target="_blank"
               rel="noreferrer"
-              className="motion-button inline-flex min-h-[3.25rem] items-center justify-center rounded-[1.35rem] border border-cyan-200 bg-cyan-50 px-5 py-3 text-base font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
+              className="motion-button inline-flex min-h-[3rem] items-center justify-center rounded-[1.2rem] border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
             >
               เปิดแผนที่ใกล้ฉัน
             </a>
@@ -248,38 +257,38 @@ export function NearbyHospitalsPanel({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[0.82fr_1.18fr]">
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,0.34fr)_minmax(0,0.66fr)]">
         <div className="space-y-4">
-          <div className="rounded-[1.6rem] border border-cyan-100 bg-white/88 p-4">
-            <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-              ตําแหน่งล่าสุด
+          <div className="rounded-[1.45rem] border border-cyan-100 bg-white/90 p-4">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+              ตำแหน่งล่าสุด
             </p>
-            <p className="mt-3 text-base font-bold text-slate-950">
+            <p className="mt-2 text-sm font-bold leading-7 text-slate-950">
               {data?.location.label ??
                 savedLocation?.label ??
-                "ยังไม่มีตําแหน่งล่าสุดในระบบ"}
+                "ยังไม่มีตำแหน่งล่าสุดในระบบ"}
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {data?.location.updatedAt
                 ? `อัปเดตเมื่อ ${formatSystemDateTime(data.location.updatedAt, true)}`
                 : savedLocation?.updatedAt
                   ? `อัปเดตเมื่อ ${formatSystemDateTime(savedLocation.updatedAt, true)}`
-                  : "กดปุ่มใช้ตําแหน่งปัจจุบันเพื่อค้นหาโรงพยาบาลรอบตัวคุณ"}
+                  : "กดใช้ตำแหน่งปัจจุบันเพื่อค้นหาโรงพยาบาลรอบตัว"}
             </p>
           </div>
 
-          <div className="rounded-[1.6rem] border border-cyan-100 bg-white/88 p-4 text-sm leading-7 text-slate-600">
-            ใช้ส่วนนี้เมื่อเริ่มไม่สบาย เวียนหัว ความดันสูง หรืออยากรู้ว่าถ้าต้องไปโรงพยาบาลตอนนี้ควรไปที่ไหนใกล้ที่สุด
+          <div className="rounded-[1.45rem] border border-slate-100 bg-white/80 p-4 text-sm leading-7 text-slate-600">
+            ใช้ส่วนนี้เมื่อรู้สึกไม่สบาย เวียนหัว ความดันสูง หรืออยากดูว่าตอนนี้ควรไปโรงพยาบาลที่ใกล้ที่สุดที่ไหน
           </div>
 
           {error ? (
-            <p className="rounded-[1.4rem] bg-rose-50 px-4 py-4 text-sm leading-7 text-rose-700">
+            <p className="rounded-[1.35rem] bg-rose-50 px-4 py-4 text-sm leading-7 text-rose-700">
               {error}
             </p>
           ) : null}
 
           {warning ? (
-            <p className="rounded-[1.4rem] bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-800">
+            <p className="rounded-[1.35rem] bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-800">
               {warning}
             </p>
           ) : null}
@@ -287,16 +296,16 @@ export function NearbyHospitalsPanel({
 
         <div className="space-y-4">
           {mapEmbedUrl ? (
-            <div className="overflow-hidden rounded-[1.7rem] border border-cyan-100 bg-white/92 shadow-[0_22px_50px_-34px_rgba(15,23,42,0.22)]">
+            <div className="overflow-hidden rounded-[1.55rem] border border-cyan-100 bg-white/92 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.2)]">
               <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-4">
-                <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                    แผนที่โรงพยาบาลใกล้ฉัน
+                <div className="space-y-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+                    แผนที่
                   </p>
-                  <p className="mt-2 text-base font-bold text-slate-950">
+                  <p className="text-sm font-bold text-slate-950">
                     {selectedHospital
-                      ? `กําลังดู: ${selectedHospital.name}`
-                      : "ดูโรงพยาบาลใกล้ตัวจากตําแหน่งล่าสุด"}
+                      ? `กำลังดู: ${selectedHospital.name}`
+                      : "ดูโรงพยาบาลใกล้ตัวจากตำแหน่งล่าสุด"}
                   </p>
                 </div>
 
@@ -305,9 +314,9 @@ export function NearbyHospitalsPanel({
                     href={selectedHospital?.mapUrl ?? fallbackMapUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="motion-button inline-flex min-h-[2.8rem] items-center justify-center rounded-[1.1rem] border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
+                    className="motion-button inline-flex min-h-[2.65rem] items-center justify-center rounded-[1rem] border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
                   >
-                    เปิดใน Google Maps
+                    เปิด Google Maps
                   </a>
                 ) : null}
               </div>
@@ -317,69 +326,91 @@ export function NearbyHospitalsPanel({
                 src={mapEmbedUrl}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className="h-[20rem] w-full border-0 sm:h-[24rem]"
+                className="h-[15rem] w-full border-0 sm:h-[17rem] lg:h-[18rem]"
               />
             </div>
           ) : (
-            <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-white/82 px-4 py-5 text-sm leading-7 text-slate-500">
-              ยังไม่มีแผนที่ให้แสดง กรุณากดใช้ตําแหน่งปัจจุบันก่อนหนึ่งครั้ง
+            <div className="rounded-[1.45rem] border border-dashed border-slate-200 bg-white/82 px-4 py-5 text-sm leading-7 text-slate-500">
+              ยังไม่มีแผนที่ให้แสดง กรุณากดใช้ตำแหน่งปัจจุบันก่อนหนึ่งครั้ง
             </div>
           )}
 
-          {!data?.hospitals.length ? (
-            <div className="rounded-[1.5rem] border border-dashed border-slate-200 bg-white/82 px-4 py-5 text-sm leading-7 text-slate-500">
+          {totalHospitals > 0 ? (
+            <div className="rounded-[1.45rem] border border-white/80 bg-white/88 p-4 shadow-[0_16px_36px_-30px_rgba(15,23,42,0.18)]">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-slate-950">
+                    รายชื่อโรงพยาบาลใกล้ฉัน
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    แสดง {displayedHospitals.length} จาก {totalHospitals} แห่ง
+                  </p>
+                </div>
+
+                {totalHospitals > 4 ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllHospitals((currentValue) => !currentValue)}
+                    className="motion-button inline-flex min-h-[2.65rem] items-center justify-center rounded-[1rem] border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-900"
+                  >
+                    {showAllHospitals ? "ย่อรายการ" : "ดูเพิ่ม"}
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {displayedHospitals.map((hospital) => (
+                  <div
+                    key={hospital.id}
+                    className={`rounded-[1.3rem] border px-4 py-4 transition ${
+                      hospital.id === selectedHospital?.id
+                        ? "border-cyan-200 bg-cyan-50/70"
+                        : "border-slate-100 bg-white"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <p className="text-sm font-bold text-slate-950">
+                          {hospital.name}
+                        </p>
+                        <p className="text-sm leading-6 text-slate-600">
+                          {hospital.address}
+                        </p>
+                      </div>
+
+                      <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                        {formatHospitalDistance(hospital.distanceKm)}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedHospitalId(hospital.id)}
+                        className="motion-button inline-flex min-h-[2.6rem] items-center justify-center rounded-[1rem] border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
+                      >
+                        ดูบนแผนที่
+                      </button>
+                      <a
+                        href={hospital.directionsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="motion-button inline-flex min-h-[2.6rem] items-center justify-center rounded-[1rem] border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-bold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
+                      >
+                        เปิดเส้นทาง
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[1.45rem] border border-dashed border-slate-200 bg-white/82 px-4 py-5 text-sm leading-7 text-slate-500">
               {hasSavedLocation
-                ? "ระบบยังไม่พบรายชื่อโรงพยาบาลอัตโนมัติจากตําแหน่งล่าสุด ลองกดใช้ตําแหน่งปัจจุบันอีกครั้งหรือเปิดแผนที่ใกล้ฉัน"
-                : "ยังไม่มีรายชื่อโรงพยาบาลใกล้ฉันในระบบ กดใช้ตําแหน่งปัจจุบันก่อนหนึ่งครั้ง"}
+                ? "ระบบยังไม่พบรายชื่อโรงพยาบาลอัตโนมัติจากตำแหน่งล่าสุด ลองกดใช้ตำแหน่งปัจจุบันอีกครั้งหรือเปิดแผนที่ใกล้ฉัน"
+                : "ยังไม่มีรายชื่อโรงพยาบาลใกล้ฉันในระบบ กดใช้ตำแหน่งปัจจุบันก่อนหนึ่งครั้ง"}
             </div>
-          ) : null}
-
-          {data?.hospitals.map((hospital) => (
-            <div
-              key={hospital.id}
-              className={`rounded-[1.5rem] border px-4 py-4 shadow-[0_16px_35px_-28px_rgba(15,23,42,0.22)] transition ${
-                hospital.id === selectedHospital?.id
-                  ? "border-cyan-200 bg-cyan-50/70"
-                  : "border-white/80 bg-white/90"
-              }`}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-2">
-                  <p className="text-base font-bold text-slate-950">{hospital.name}</p>
-                  <p className="text-sm leading-6 text-slate-600">{hospital.address}</p>
-                </div>
-                <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                  {formatHospitalDistance(hospital.distanceKm)}
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedHospitalId(hospital.id)}
-                  className="motion-button inline-flex min-h-[2.9rem] items-center justify-center rounded-[1.2rem] border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-bold text-cyan-900 transition hover:border-cyan-300 hover:bg-cyan-100"
-                >
-                  ดูบนแผนที่
-                </button>
-                <a
-                  href={hospital.mapUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="motion-button inline-flex min-h-[2.9rem] items-center justify-center rounded-[1.2rem] border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-900"
-                >
-                  เปิดแผนที่
-                </a>
-                <a
-                  href={hospital.directionsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="motion-button inline-flex min-h-[2.9rem] items-center justify-center rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100"
-                >
-                  เปิดเส้นทาง
-                </a>
-              </div>
-            </div>
-          ))}
+          )}
         </div>
       </div>
     </Card>
