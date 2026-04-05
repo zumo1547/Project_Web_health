@@ -242,29 +242,12 @@ export default async function ElderlyPortalPage() {
           </div>
 
           <Card className="border-cyan-100 bg-[linear-gradient(135deg,rgba(240,249,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-            <CardTitle>สรุปตอนนี้</CardTitle>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-                <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                  คุณหมอที่ดูแล
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {latestDoctor
-                    ? latestDoctor.name
-                    : "ยังไม่มีคุณหมอดูแล สามารถกดขอรับเคสในหมวดขอความช่วยเหลือได้"}
-                </p>
-              </div>
-
-              <div className="rounded-[1.5rem] bg-white/90 px-4 py-4">
-                <p className="text-sm font-bold uppercase tracking-[0.14em] text-slate-500">
-                  สิ่งที่ระบบจำได้ล่าสุด
-                </p>
-                <p className="mt-2 text-sm leading-7 text-slate-700">
-                  {summarizeText(latestAiScan?.summary) ??
-                    latestMedicine?.label ??
-                    "ยังไม่มีผลสแกนหรือรูปยาล่าสุดในแฟ้ม"}
-                </p>
-              </div>
+            <CardTitle>คำแนะนำการใช้งาน</CardTitle>
+            <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
+              <p>1. นั่งพักก่อนวัดประมาณ 5 นาที แล้วค่อยบันทึกค่า</p>
+              <p>2. ถ้ามีรูปจากเครื่องวัดอยู่แล้ว ใช้ส่วนสแกนรูปความดันให้ระบบช่วยอ่านค่าได้</p>
+              <p>3. ถ้าผลประเมินบอกว่าเริ่มสูงหรือผิดปกติ ให้กดปุ่มลอยทัก AI หรือคุณหมอได้ทันที</p>
+              <p>4. ถ้ารู้สึกไม่สบายมาก ให้เลื่อนลงไปดูโรงพยาบาลใกล้ฉันในหมวดย้อนหลังได้ด้านล่าง</p>
             </div>
           </Card>
         </div>
@@ -344,7 +327,7 @@ export default async function ElderlyPortalPage() {
         </Card>
 
         <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
-          <AiScanForm elderlyId={elderly.id} />
+          <AiScanForm elderlyId={elderly.id} showBloodPressure={false} />
           <MedicineUploadForm elderlyId={elderly.id} />
         </div>
       </section>
@@ -357,18 +340,9 @@ export default async function ElderlyPortalPage() {
           </CardDescription>
         </Card>
 
-        <div className="grid gap-5 xl:grid-cols-[1.02fr_0.98fr] xl:items-start">
+        <div className="grid gap-5 xl:grid-cols-2 xl:items-start">
+          <AiScanForm elderlyId={elderly.id} showMedicine={false} />
           <BloodPressureForm elderlyId={elderly.id} />
-
-          <Card className="border-emerald-100 bg-[linear-gradient(135deg,rgba(240,253,244,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-            <CardTitle>แนวทางดูแลวันนี้</CardTitle>
-            <div className="mt-5 space-y-4 text-base leading-8 text-slate-700">
-              <p>1. นั่งพักก่อนวัดประมาณ 5 นาที แล้วค่อยบันทึกค่า</p>
-              <p>2. ถ้ามีรูปจากเครื่องวัดอยู่แล้ว ใช้ส่วนสแกนรูปความดันให้ระบบช่วยอ่านได้</p>
-              <p>3. ถ้าผลประเมินบอกว่าเริ่มสูงหรือผิดปกติ ให้กดปุ่มลอยทัก AI หรือคุณหมอทันที</p>
-              <p>4. ถ้ารู้สึกไม่สบายมาก ให้เลื่อนลงไปดูหมวดโรงพยาบาลใกล้ฉันได้ด้านล่าง</p>
-            </div>
-          </Card>
         </div>
       </section>
 
