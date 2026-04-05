@@ -85,7 +85,7 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3 lg:bottom-auto lg:right-6 lg:top-1/2 lg:w-[19rem] lg:-translate-y-1/2 lg:gap-4">
+      <div className="fixed bottom-4 right-4 z-40 flex flex-col gap-2.5 sm:bottom-6 sm:right-6 sm:gap-3">
         {items.map((item) => {
           const meta = getSupportMeta(item.icon);
 
@@ -94,20 +94,20 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
               key={item.id}
               type="button"
               onClick={() => setActiveId(item.id)}
-              className="floating-dock-button motion-button group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:gap-3 sm:rounded-full sm:px-4 sm:py-3 lg:w-full lg:items-start lg:justify-start lg:rounded-[1.8rem] lg:border-slate-800/20 lg:px-4 lg:py-4"
+              className="floating-dock-button motion-button group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:max-w-[20rem] sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300 sm:h-11 sm:w-11">
                 <FloatingIcon icon={item.icon} />
               </span>
 
-              <span className="hidden min-w-0 sm:block lg:flex-1">
-                <span className="block text-[0.68rem] font-bold uppercase tracking-[0.16em] text-emerald-200/80 lg:text-[0.7rem]">
+              <span className="hidden min-w-0 sm:block">
+                <span className="block text-[0.68rem] font-bold uppercase tracking-[0.16em] text-emerald-200/80">
                   {meta.eyebrow}
                 </span>
-                <span className="mt-1 block text-sm font-black text-white lg:text-base">
+                <span className="mt-1 block text-sm font-black text-white">
                   {meta.headline}
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-slate-300 lg:text-[0.82rem]">
+                <span className="mt-1 block text-xs leading-5 text-slate-300">
                   {meta.helper}
                 </span>
               </span>
@@ -125,7 +125,7 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
             onClick={() => setActiveId(null)}
           />
 
-          <div className="floating-panel-enter absolute inset-x-0 bottom-0 mx-auto max-h-[82vh] w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,252,0.98)_100%)] shadow-[0_30px_80px_-34px_rgba(15,23,42,0.5)] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:max-h-[calc(100vh-5rem)] sm:rounded-[2rem] lg:right-8 lg:top-1/2 lg:bottom-auto lg:max-h-[calc(100vh-6rem)] lg:w-[min(32rem,calc(100vw-28rem))] lg:-translate-y-1/2">
+          <div className="floating-panel-enter absolute inset-x-0 bottom-0 mx-auto max-h-[82vh] w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,252,0.98)_100%)] shadow-[0_30px_80px_-34px_rgba(15,23,42,0.5)] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:max-h-[calc(100vh-5rem)] sm:rounded-[2rem]">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">
