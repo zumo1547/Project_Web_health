@@ -47,7 +47,7 @@ const mobileButtonToneStyles: Record<NonNullable<SectionNavProps["tone"]>, strin
 
 const drawerToneStyles: Record<NonNullable<SectionNavProps["tone"]>, string> = {
   doctor:
-    "border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.98)_0%,rgba(15,23,42,0.98)_100%)] text-white",
+    "border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.99)_0%,rgba(15,23,42,0.98)_100%)] text-white",
   elderly:
     "border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.98)_100%)] text-slate-900",
   admin:
@@ -104,10 +104,7 @@ function CloseIcon() {
 function ItemIcon({ index }: { index: number }) {
   const icons = [
     <path key="home" d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4.5v-5h-5v5H5a1 1 0 0 1-1-1z" />,
-    <path
-      key="quick"
-      d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z"
-    />,
+    <path key="quick" d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" />,
     <>
       <path key="support-1" d="M12 21c4.8-1 8-4.4 8-8.4V6.8L12 3 4 6.8v5.8c0 4 3.2 7.4 8 8.4Z" />
       <path key="support-2" d="M9.5 12h5" />
@@ -166,25 +163,21 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
 
   return (
     <>
-      <div className="sticky top-3 z-30 mt-5 sm:hidden">
+      <div className="sticky top-3 z-30 mt-5 flex justify-start sm:hidden">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={`flex w-full items-center justify-between rounded-[1.3rem] border px-4 py-3 ${mobileButtonToneStyles[tone]}`}
+          aria-label="Open quick navigation"
+          className={`inline-flex min-h-[3.15rem] items-center gap-3 rounded-full border px-4 py-2.5 ${mobileButtonToneStyles[tone]}`}
         >
-          <span className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-600">
-              <MenuIcon />
-            </span>
-            <span className="text-left">
-              <span className="block text-xs font-bold uppercase tracking-[0.18em] opacity-60">
-                เมนูหน้า
-              </span>
-              <span className="block text-base font-bold">เปิดแถบเมนูด่วน</span>
-            </span>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-600">
+            <MenuIcon />
           </span>
-          <span className="rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-slate-600">
-            {items.length} รายการ
+          <span className="text-left">
+            <span className="block text-[0.68rem] font-bold uppercase tracking-[0.18em] opacity-55">
+              Menu
+            </span>
+            <span className="block text-sm font-bold">เปิดเมนูด่วน</span>
           </span>
         </button>
       </div>
@@ -215,15 +208,15 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
         <div className="fixed inset-0 z-50 sm:hidden">
           <button
             type="button"
-            aria-label="ปิดเมนู"
+            aria-label="Close menu"
             className="absolute inset-0 bg-slate-950/38 backdrop-blur-[2px]"
             onClick={() => setIsOpen(false)}
           />
 
           <aside
-            className={`absolute inset-y-0 left-0 flex w-[min(84vw,22rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
+            className={`absolute inset-y-0 left-0 flex w-[min(82vw,21rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-5">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 pb-4 pt-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.22em] opacity-60">
                   Quick navigation
@@ -238,6 +231,12 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
               >
                 <CloseIcon />
               </button>
+            </div>
+
+            <div className="px-5 pt-4">
+              <div className="rounded-[1.35rem] border border-white/10 bg-white/5 px-4 py-3 text-sm leading-6 opacity-80">
+                เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนที่กดทันที
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-4">
