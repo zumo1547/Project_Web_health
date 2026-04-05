@@ -163,12 +163,12 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
 
   return (
     <>
-      <div className="sticky top-3 z-30 mt-5 flex justify-start sm:hidden">
+      <div className="page-section-animate sticky top-3 z-30 mt-5 flex justify-start sm:hidden" data-delay="3">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           aria-label="Open quick navigation"
-          className={`inline-flex min-h-[3.15rem] items-center gap-3 rounded-full border px-4 py-2.5 ${mobileButtonToneStyles[tone]}`}
+          className={`motion-button inline-flex min-h-[3.15rem] items-center gap-3 rounded-full border px-4 py-2.5 ${mobileButtonToneStyles[tone]}`}
         >
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-600">
             <MenuIcon />
@@ -183,7 +183,8 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
       </div>
 
       <nav
-        className={`sticky top-3 z-30 mt-8 hidden overflow-hidden rounded-[1.9rem] border px-4 py-3 backdrop-blur sm:block ${desktopToneStyles[tone]}`}
+        className={`page-section-animate sticky top-3 z-30 mt-8 hidden overflow-hidden rounded-[1.9rem] border px-4 py-3 backdrop-blur sm:block ${desktopToneStyles[tone]}`}
+        data-delay="3"
         aria-label="Section navigation"
       >
         <div className="flex gap-3 overflow-x-auto pb-1">
@@ -214,7 +215,7 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
           />
 
           <aside
-            className={`absolute inset-y-0 left-0 flex w-[min(82vw,21rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
+            className={`floating-panel-enter absolute inset-y-0 left-0 flex w-[min(82vw,21rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 pb-4 pt-6">
               <div>

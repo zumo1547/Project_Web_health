@@ -115,7 +115,10 @@ export function AppShell({
   return (
     <div className={`min-h-screen ${styles.page}`}>
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-        <header className={`rounded-[2.2rem] border p-4 backdrop-blur sm:p-6 ${styles.header}`}>
+        <header
+          className={`page-section-animate rounded-[2.2rem] border p-4 backdrop-blur sm:p-6 ${styles.header}`}
+          data-delay="1"
+        >
           <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
@@ -190,7 +193,10 @@ export function AppShell({
         </header>
 
         <section className="mt-8 grid gap-5 xl:grid-cols-[1.3fr_0.7fr] xl:items-end">
-          <div className={`flex flex-col gap-4 rounded-[2.25rem] p-6 backdrop-blur-sm sm:p-7 lg:p-8 ${heroLeadClass}`}>
+          <div
+            className={`page-section-animate motion-surface flex flex-col gap-4 rounded-[2.25rem] p-6 backdrop-blur-sm sm:p-7 lg:p-8 ${heroLeadClass}`}
+            data-delay="2"
+          >
             <p className={`text-sm font-bold uppercase tracking-[0.22em] ${heroEyebrowClass}`}>
               {styles.eyebrow}
             </p>
@@ -202,7 +208,10 @@ export function AppShell({
             </p>
           </div>
 
-          <div className="rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm">
+          <div
+            className="page-section-animate motion-surface rounded-[2rem] border border-white/70 bg-white/72 p-5 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.28)] backdrop-blur-sm"
+            data-delay="3"
+          >
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
               ใช้งานเร็ว
             </p>
@@ -231,7 +240,9 @@ export function AppShell({
 
         <SectionNav items={navigation} tone={portal} />
 
-        <main className="mt-8">{children}</main>
+        <main className="page-section-animate mt-8" data-delay="4">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -73,7 +73,7 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
             key={item.id}
             type="button"
             onClick={() => setActiveId(item.id)}
-            className="group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
+            className="floating-dock-button motion-button group inline-flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/80 bg-slate-950 p-0 text-left text-white shadow-[0_24px_60px_-34px_rgba(2,6,23,0.78)] transition hover:-translate-y-0.5 hover:bg-slate-900 sm:h-auto sm:w-auto sm:gap-3 sm:rounded-full sm:px-4 sm:py-3"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-300 sm:h-11 sm:w-11">
               <FloatingIcon icon={item.icon} />
@@ -95,7 +95,7 @@ export function FloatingSupportDock({ items }: FloatingSupportDockProps) {
             onClick={() => setActiveId(null)}
           />
 
-          <div className="absolute inset-x-0 bottom-0 mx-auto max-h-[82vh] w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,252,0.98)_100%)] shadow-[0_30px_80px_-34px_rgba(15,23,42,0.5)] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:max-h-[calc(100vh-5rem)] sm:rounded-[2rem]">
+          <div className="floating-panel-enter absolute inset-x-0 bottom-0 mx-auto max-h-[82vh] w-full max-w-[32rem] overflow-hidden rounded-t-[2rem] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(247,250,252,0.98)_100%)] shadow-[0_30px_80px_-34px_rgba(15,23,42,0.5)] sm:bottom-6 sm:right-6 sm:left-auto sm:mx-0 sm:max-h-[calc(100vh-5rem)] sm:rounded-[2rem]">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700">

@@ -3,7 +3,7 @@ type CardProps = React.HTMLAttributes<HTMLDivElement>;
 export function Card({ className = "", ...props }: CardProps) {
   return (
     <div
-      className={`rounded-[2rem] border border-white/70 bg-white/92 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.42)] backdrop-blur-sm sm:p-7 ${className}`}
+      className={`motion-surface rounded-[2rem] border border-white/70 bg-white/92 p-6 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.42)] backdrop-blur-sm sm:p-7 ${className}`}
       {...props}
     />
   );
