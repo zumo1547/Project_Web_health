@@ -2,6 +2,7 @@
 
 import { formatSystemDateTime } from "@/lib/date-time";
 import { readApiResponse } from "@/lib/client-image";
+import { formatHospitalDistance } from "@/lib/hospital-map";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +44,22 @@ type ApiChatMessage = {
   };
 };
 
+type HospitalShareChatPayload = {
+  type: "hospital-share";
+  patientName: string;
+  locationLabel: string | null;
+  hospitals: Array<{
+    id: string;
+    name: string;
+    address: string;
+    distanceKm: number;
+    mapUrl: string;
+    directionsUrl: string;
+  }>;
+};
+
+const HOSPITAL_SHARE_PREFIX = "[[HOSPITAL_SHARE]]";
+
 const roleLabels: Record<UserRole, string> = {
   ADMIN: "แอดมิน",
   DOCTOR: "คุณหมอ",
@@ -63,6 +80,136 @@ function mapApiMessageToView(message: ApiChatMessage): ChatMessageView {
     senderName: message.sender.name,
     senderRole: message.sender.role ?? message.senderRole,
   };
+}
+
+function parseLegacyHospitalShareMessage(content: string): HospitalShareChatPayload | null {
+  if (!content.includes("http") || !content.match(/^\d+\.\s+/m)) {
+    return null;
+  }
+
+  const lines = content
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const patientName =
+    lines[0]?.match(/สำหรับ\s+(.+)$/)?.[1]?.trim() ??
+    lines[0]?.match(/for\s+(.+)$/i)?.[1]?.trim() ??
+    "ผู้ป่วย";
+
+  const locationLabel =
+    lines
+      .find(
+        (line) => line.includes("ตำแหน่งล่าสุด") || line.includes("อ้างอิงจากตำแหน่ง"),
+      )
+      ?.split(":")
+      .slice(1)
+      .join(":")
+      .trim() ?? null;
+
+  const hospitals: HospitalShareChatPayload["hospitals"] = [];
+  let currentEntry: string[] = [];
+
+  function flushCurrentEntry() {
+    if (!currentEntry.length) {
+      return;
+    }
+
+    const headerMatch = currentEntry[0].match(/^\d+\.\s*(.+?)(?:\s*\(([^)]+)\))?$/);
+    if (!headerMatch) {
+      currentEntry = [];
+      return;
+    }
+
+    const urls = currentEntry
+      .flatMap((line) => line.match(/https?:\/\/\S+/g) ?? [])
+      .filter(Boolean);
+
+    const mapUrl = urls.find((url) => !url.includes("/maps/dir/")) ?? urls[0] ?? "";
+    const directionsUrl =
+      urls.find((url) => url.includes("/maps/dir/")) ?? mapUrl;
+
+    const address =
+      currentEntry
+        .find((line) => line.startsWith("ที่อยู่:"))
+        ?.replace(/^ที่อยู่:\s*/, "")
+        .trim() ??
+      currentEntry.find(
+        (line) =>
+          !line.includes("http") &&
+          !/^\d+\./.test(line) &&
+          !line.includes("แผนที่") &&
+          !line.includes("เส้นทาง"),
+      ) ??
+      "";
+
+    const distanceText = headerMatch[2] ?? "";
+    const kmMatch = distanceText.match(/([\d.]+)\s*(กม\.|km)/i);
+    const meterMatch = distanceText.match(/(\d+)\s*(เมตร|m)/i);
+    const distanceKm = kmMatch
+      ? Number(kmMatch[1])
+      : meterMatch
+        ? Number(meterMatch[1]) / 1000
+        : 0;
+
+    hospitals.push({
+      id: `${headerMatch[1]}-${distanceText || "shared"}`,
+      name: headerMatch[1].trim(),
+      address,
+      distanceKm,
+      mapUrl,
+      directionsUrl,
+    });
+
+    currentEntry = [];
+  }
+
+  for (const line of lines) {
+    if (/^\d+\.\s+/.test(line)) {
+      flushCurrentEntry();
+      currentEntry = [line];
+      continue;
+    }
+
+    if (currentEntry.length) {
+      currentEntry.push(line);
+    }
+  }
+
+  flushCurrentEntry();
+
+  if (!hospitals.length) {
+    return null;
+  }
+
+  return {
+    type: "hospital-share",
+    patientName,
+    locationLabel,
+    hospitals: hospitals.slice(0, 3),
+  };
+}
+
+function parseHospitalShareMessage(content: string): HospitalShareChatPayload | null {
+  if (content.startsWith(HOSPITAL_SHARE_PREFIX)) {
+    try {
+      const payload = JSON.parse(
+        content.slice(HOSPITAL_SHARE_PREFIX.length),
+      ) as HospitalShareChatPayload;
+
+      if (
+        payload.type === "hospital-share" &&
+        Array.isArray(payload.hospitals) &&
+        payload.hospitals.length
+      ) {
+        return payload;
+      }
+    } catch (error) {
+      console.error("CHAT_HOSPITAL_SHARE_PARSE_ERROR", error);
+    }
+  }
+
+  return parseLegacyHospitalShareMessage(content);
 }
 
 function areMessagesEqual(left: ChatMessageView[], right: ChatMessageView[]) {
@@ -215,6 +362,7 @@ export function ChatPanel({
 
         {chatMessages.map((message) => {
           const isOwnMessage = message.senderId === currentUserId;
+          const hospitalShare = parseHospitalShareMessage(message.content);
 
           return (
             <div key={message.id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
@@ -232,9 +380,98 @@ export function ChatPanel({
                   <span>{roleLabels[message.senderRole]}</span>
                   <span>{formatDate(message.createdAt)}</span>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-base leading-7">
-                  {message.content}
-                </p>
+                {hospitalShare ? (
+                  <div className="mt-3 space-y-3">
+                    <div
+                      className={`rounded-[1.3rem] border px-3 py-3 ${
+                        isOwnMessage
+                          ? "border-white/15 bg-white/5"
+                          : "border-emerald-100 bg-emerald-50"
+                      }`}
+                    >
+                      <p className="text-sm font-bold">
+                        โรงพยาบาลใกล้คุณ {hospitalShare.patientName}
+                      </p>
+                      <p
+                        className={`mt-1 text-sm leading-6 ${
+                          isOwnMessage ? "text-slate-300" : "text-slate-600"
+                        }`}
+                      >
+                        {hospitalShare.locationLabel
+                          ? `อ้างอิงจาก: ${hospitalShare.locationLabel}`
+                          : "ใช้ตำแหน่งล่าสุดของผู้ป่วยในการค้นหา"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      {hospitalShare.hospitals.map((hospital, index) => (
+                        <div
+                          key={`${message.id}-${hospital.id}-${index}`}
+                          className={`rounded-[1.25rem] border px-3 py-3 ${
+                            isOwnMessage
+                              ? "border-white/12 bg-white/5"
+                              : "border-slate-200 bg-white"
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold leading-6">{hospital.name}</p>
+                              {hospital.address ? (
+                                <p
+                                  className={`mt-1 text-sm leading-6 ${
+                                    isOwnMessage ? "text-slate-300" : "text-slate-600"
+                                  }`}
+                                >
+                                  {hospital.address}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div
+                              className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                                isOwnMessage
+                                  ? "bg-emerald-500/15 text-emerald-200"
+                                  : "bg-emerald-50 text-emerald-700"
+                              }`}
+                            >
+                              {formatHospitalDistance(hospital.distanceKm)}
+                            </div>
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <a
+                              href={hospital.mapUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`inline-flex min-h-[2.5rem] items-center justify-center rounded-[1rem] border px-3 py-2 text-sm font-bold transition ${
+                                isOwnMessage
+                                  ? "border-white/15 bg-white/8 text-white hover:bg-white/12"
+                                  : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                              }`}
+                            >
+                              ดูแผนที่
+                            </a>
+                            <a
+                              href={hospital.directionsUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`inline-flex min-h-[2.5rem] items-center justify-center rounded-[1rem] border px-3 py-2 text-sm font-bold transition ${
+                                isOwnMessage
+                                  ? "border-emerald-400/30 bg-emerald-500/12 text-emerald-200 hover:bg-emerald-500/18"
+                                  : "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                              }`}
+                            >
+                              เปิดเส้นทาง
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-2 whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-base leading-7">
+                    {message.content}
+                  </p>
+                )}
               </div>
             </div>
           );

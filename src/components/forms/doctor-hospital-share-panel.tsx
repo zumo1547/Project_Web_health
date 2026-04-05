@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { fetchWithTimeout, readApiResponse } from "@/lib/client-image";
 import {
-  buildHospitalShareMessage,
   formatHospitalDistance,
   type NearbyHospital,
   type NearbyHospitalLocation,
@@ -19,6 +18,28 @@ type NearbyHospitalsResponse = {
   mapSearchUrl: string;
   warning?: string;
 };
+
+const HOSPITAL_SHARE_PREFIX = "[[HOSPITAL_SHARE]]";
+
+function buildStructuredHospitalShareMessage(
+  patientName: string,
+  hospitals: NearbyHospital[],
+  locationLabel?: string | null,
+) {
+  return `${HOSPITAL_SHARE_PREFIX}${JSON.stringify({
+    type: "hospital-share",
+    patientName,
+    locationLabel: locationLabel ?? null,
+    hospitals: hospitals.slice(0, 3).map((hospital) => ({
+      id: hospital.id,
+      name: hospital.name,
+      address: hospital.address,
+      distanceKm: hospital.distanceKm,
+      mapUrl: hospital.mapUrl,
+      directionsUrl: hospital.directionsUrl,
+    })),
+  })}`;
+}
 
 type DoctorHospitalSharePanelProps = {
   elderlyId: string;
@@ -106,7 +127,7 @@ export function DoctorHospitalSharePanel({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: buildHospitalShareMessage(
+          content: buildStructuredHospitalShareMessage(
             patientName,
             hospitals,
             data?.location.label ?? savedLocation?.label,
