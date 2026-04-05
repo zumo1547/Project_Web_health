@@ -1,4 +1,10 @@
-const OVERPASS_ENDPOINT = "https://overpass-api.de/api/interpreter";
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://lz4.overpass-api.de/api/interpreter",
+];
+const NOMINATIM_ENDPOINT = "https://nominatim.openstreetmap.org/search";
+const APP_USER_AGENT = "SeniorHealthCheck/1.0 (+https://project-web-health.vercel.app)";
 const DEFAULT_RADIUS_KM = 8;
 const MAX_RADIUS_KM = 20;
 const MAX_RESULTS = 6;
@@ -12,6 +18,15 @@ type OverpassElement = {
     lon: number;
   };
   tags?: Record<string, string>;
+};
+
+type NominatimElement = {
+  place_id: number;
+  lat: string;
+  lon: string;
+  name?: string;
+  display_name?: string;
+  address?: Record<string, string>;
 };
 
 export type NearbyHospitalLocation = {
@@ -67,7 +82,9 @@ export function calculateDistanceKm(
 }
 
 export function buildHospitalMapUrl(latitude: number, longitude: number, name?: string) {
-  const query = encodeURIComponent(name ? `${name} ${latitude},${longitude}` : `${latitude},${longitude}`);
+  const query = encodeURIComponent(
+    name ? `${name} ${latitude},${longitude}` : `${latitude},${longitude}`,
+  );
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
@@ -89,7 +106,9 @@ export function buildSpecificHospitalEmbedUrl(
   longitude: number,
   name?: string,
 ) {
-  const query = encodeURIComponent(name ? `${name} ${latitude},${longitude}` : `${latitude},${longitude}`);
+  const query = encodeURIComponent(
+    name ? `${name} ${latitude},${longitude}` : `${latitude},${longitude}`,
+  );
   return `https://www.google.com/maps?q=${query}&z=16&output=embed`;
 }
 
@@ -112,7 +131,9 @@ function normalizeHospitalAddress(tags?: Record<string, string>) {
     return tags["addr:full"];
   }
 
-  const street = [tags["addr:housenumber"], tags["addr:street"]].filter(Boolean).join(" ");
+  const street = [tags["addr:housenumber"], tags["addr:street"]]
+    .filter(Boolean)
+    .join(" ");
   const area = [
     tags["addr:subdistrict"],
     tags["addr:district"],
@@ -125,6 +146,81 @@ function normalizeHospitalAddress(tags?: Record<string, string>) {
   const pieces = [street, area].filter(Boolean);
 
   return pieces.length ? pieces.join(", ") : "ใช้ปุ่มเปิดแผนที่เพื่อดูเส้นทาง";
+}
+
+function buildHospitalRequestHeaders() {
+  return {
+    Accept: "application/json",
+    "Accept-Language": "th,en;q=0.8",
+    "User-Agent": APP_USER_AGENT,
+  };
+}
+
+function buildNearbyHospital(
+  id: string,
+  name: string,
+  address: string,
+  latitude: number,
+  longitude: number,
+  originLatitude: number,
+  originLongitude: number,
+) {
+  return {
+    id,
+    name,
+    address,
+    latitude,
+    longitude,
+    distanceKm: calculateDistanceKm(
+      originLatitude,
+      originLongitude,
+      latitude,
+      longitude,
+    ),
+    mapUrl: buildHospitalMapUrl(latitude, longitude, name),
+    directionsUrl: buildHospitalDirectionsUrl(latitude, longitude),
+  } satisfies NearbyHospital;
+}
+
+function buildSearchViewBox(latitude: number, longitude: number, radiusKm: number) {
+  const clampedRadius = clampHospitalRadius(radiusKm);
+  const latitudeDelta = clampedRadius / 111;
+  const longitudeDelta =
+    clampedRadius / Math.max(111 * Math.cos(toRadians(latitude)), 0.1);
+
+  return [
+    longitude - longitudeDelta,
+    latitude + latitudeDelta,
+    longitude + longitudeDelta,
+    latitude - latitudeDelta,
+  ].join(",");
+}
+
+function normalizeNominatimName(element: NominatimElement) {
+  return (
+    element.name ||
+    element.address?.hospital ||
+    element.address?.amenity ||
+    element.display_name?.split(",")[0]?.trim() ||
+    "โรงพยาบาลใกล้คุณ"
+  );
+}
+
+function normalizeNominatimAddress(element: NominatimElement) {
+  if (!element.display_name) {
+    return "ใช้ปุ่มเปิดแผนที่เพื่อดูเส้นทาง";
+  }
+
+  const pieces = element.display_name
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (pieces.length <= 1) {
+    return element.display_name;
+  }
+
+  return pieces.slice(1).join(", ");
 }
 
 function buildOverpassQuery(latitude: number, longitude: number, radiusKm: number) {
@@ -141,73 +237,193 @@ out center tags;
   `.trim();
 }
 
+async function fetchNearbyHospitalsFromOverpass(
+  latitude: number,
+  longitude: number,
+  radiusKm = DEFAULT_RADIUS_KM,
+) {
+  let lastError: Error | null = null;
+
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          ...buildHospitalRequestHeaders(),
+          "Content-Type": "text/plain;charset=UTF-8",
+        },
+        body: buildOverpassQuery(latitude, longitude, radiusKm),
+        signal: AbortSignal.timeout(9000),
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`OVERPASS_${response.status}`);
+      }
+
+      const payload = (await response.json()) as { elements?: OverpassElement[] };
+      const seen = new Set<string>();
+
+      const hospitals = (payload.elements ?? [])
+        .map((element) => {
+          const hospitalLatitude = element.lat ?? element.center?.lat;
+          const hospitalLongitude = element.lon ?? element.center?.lon;
+
+          if (
+            hospitalLatitude === undefined ||
+            hospitalLongitude === undefined ||
+            Number.isNaN(hospitalLatitude) ||
+            Number.isNaN(hospitalLongitude)
+          ) {
+            return null;
+          }
+
+          const name = normalizeHospitalName(element.tags);
+          const address = normalizeHospitalAddress(element.tags);
+          const dedupeKey = `${name}-${hospitalLatitude.toFixed(4)}-${hospitalLongitude.toFixed(4)}`;
+
+          if (seen.has(dedupeKey)) {
+            return null;
+          }
+
+          seen.add(dedupeKey);
+
+          return buildNearbyHospital(
+            `${element.id}`,
+            name,
+            address,
+            hospitalLatitude,
+            hospitalLongitude,
+            latitude,
+            longitude,
+          );
+        })
+        .filter((hospital): hospital is NearbyHospital => Boolean(hospital))
+        .sort((left, right) => left.distanceKm - right.distanceKm)
+        .slice(0, MAX_RESULTS);
+
+      if (hospitals.length) {
+        return hospitals;
+      }
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  return [];
+}
+
+async function fetchNearbyHospitalsFromNominatim(
+  latitude: number,
+  longitude: number,
+  radiusKm = DEFAULT_RADIUS_KM,
+) {
+  const seen = new Set<string>();
+  const hospitals: NearbyHospital[] = [];
+  const queries = ["hospital", "โรงพยาบาล"];
+
+  for (const query of queries) {
+    const searchParams = new URLSearchParams({
+      format: "jsonv2",
+      q: query,
+      limit: String(MAX_RESULTS * 3),
+      bounded: "1",
+      addressdetails: "1",
+      viewbox: buildSearchViewBox(latitude, longitude, radiusKm),
+    });
+
+    const response = await fetch(`${NOMINATIM_ENDPOINT}?${searchParams.toString()}`, {
+      headers: buildHospitalRequestHeaders(),
+      signal: AbortSignal.timeout(8000),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`NOMINATIM_${response.status}`);
+    }
+
+    const payload = (await response.json()) as NominatimElement[];
+
+    for (const element of payload) {
+      const hospitalLatitude = Number(element.lat);
+      const hospitalLongitude = Number(element.lon);
+
+      if (Number.isNaN(hospitalLatitude) || Number.isNaN(hospitalLongitude)) {
+        continue;
+      }
+
+      const name = normalizeNominatimName(element);
+      const dedupeKey = `${name}-${hospitalLatitude.toFixed(4)}-${hospitalLongitude.toFixed(4)}`;
+
+      if (seen.has(dedupeKey)) {
+        continue;
+      }
+
+      seen.add(dedupeKey);
+      hospitals.push(
+        buildNearbyHospital(
+          `${element.place_id}`,
+          name,
+          normalizeNominatimAddress(element),
+          hospitalLatitude,
+          hospitalLongitude,
+          latitude,
+          longitude,
+        ),
+      );
+    }
+  }
+
+  return hospitals
+    .sort((left, right) => left.distanceKm - right.distanceKm)
+    .slice(0, MAX_RESULTS);
+}
+
 export async function fetchNearbyHospitals(
   latitude: number,
   longitude: number,
   radiusKm = DEFAULT_RADIUS_KM,
 ) {
-  const response = await fetch(OVERPASS_ENDPOINT, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "text/plain;charset=UTF-8",
-    },
-    body: buildOverpassQuery(latitude, longitude, radiusKm),
-    signal: AbortSignal.timeout(12000),
-    cache: "no-store",
-  });
+  let nominatimError: Error | null = null;
+  let overpassError: Error | null = null;
 
-  if (!response.ok) {
-    throw new Error(`OVERPASS_${response.status}`);
+  try {
+    const hospitals = await fetchNearbyHospitalsFromNominatim(
+      latitude,
+      longitude,
+      radiusKm,
+    );
+
+    if (hospitals.length) {
+      return hospitals;
+    }
+  } catch (error) {
+    nominatimError = error instanceof Error ? error : new Error(String(error));
   }
 
-  const payload = (await response.json()) as { elements?: OverpassElement[] };
-  const seen = new Set<string>();
+  try {
+    const hospitals = await fetchNearbyHospitalsFromOverpass(
+      latitude,
+      longitude,
+      radiusKm,
+    );
 
-  return (payload.elements ?? [])
-    .map((element) => {
-      const hospitalLatitude = element.lat ?? element.center?.lat;
-      const hospitalLongitude = element.lon ?? element.center?.lon;
+    if (hospitals.length) {
+      return hospitals;
+    }
+  } catch (error) {
+    overpassError = error instanceof Error ? error : new Error(String(error));
+  }
 
-      if (
-        hospitalLatitude === undefined ||
-        hospitalLongitude === undefined ||
-        Number.isNaN(hospitalLatitude) ||
-        Number.isNaN(hospitalLongitude)
-      ) {
-        return null;
-      }
+  if (nominatimError || overpassError) {
+    throw nominatimError ?? overpassError ?? new Error("HOSPITAL_LOOKUP_FAILED");
+  }
 
-      const name = normalizeHospitalName(element.tags);
-      const address = normalizeHospitalAddress(element.tags);
-      const distanceKm = calculateDistanceKm(
-        latitude,
-        longitude,
-        hospitalLatitude,
-        hospitalLongitude,
-      );
-      const dedupeKey = `${name}-${hospitalLatitude.toFixed(4)}-${hospitalLongitude.toFixed(4)}`;
-
-      if (seen.has(dedupeKey)) {
-        return null;
-      }
-
-      seen.add(dedupeKey);
-
-      return {
-        id: `${element.id}`,
-        name,
-        address,
-        latitude: hospitalLatitude,
-        longitude: hospitalLongitude,
-        distanceKm,
-        mapUrl: buildHospitalMapUrl(hospitalLatitude, hospitalLongitude, name),
-        directionsUrl: buildHospitalDirectionsUrl(hospitalLatitude, hospitalLongitude),
-      } satisfies NearbyHospital;
-    })
-    .filter((hospital): hospital is NearbyHospital => Boolean(hospital))
-    .sort((left, right) => left.distanceKm - right.distanceKm)
-    .slice(0, MAX_RESULTS);
+  return [];
 }
 
 export function formatHospitalDistance(distanceKm: number) {
@@ -237,7 +453,9 @@ export function buildHospitalShareMessage(
 ) {
   const lines = [
     `รายชื่อโรงพยาบาลใกล้คุณสำหรับ ${patientName}`,
-    locationLabel ? `อ้างอิงจากตำแหน่งล่าสุด: ${locationLabel}` : "อ้างอิงจากตำแหน่งล่าสุดที่แชร์ไว้",
+    locationLabel
+      ? `อ้างอิงจากตำแหน่งล่าสุด: ${locationLabel}`
+      : "อ้างอิงจากตำแหน่งล่าสุดที่แชร์ไว้",
     "หากมีอาการฉุกเฉินให้โทร 1669 ทันที",
     "",
   ];
