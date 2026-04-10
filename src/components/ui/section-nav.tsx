@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
 
 type SectionNavItem = {
   href: string;
@@ -46,45 +45,24 @@ const mobileButtonToneStyles: Record<NonNullable<SectionNavProps["tone"]>, strin
       "border-amber-200/70 bg-white/92 text-slate-900 shadow-[0_20px_44px_-30px_rgba(120,53,15,0.22)]",
   };
 
-const mobileDrawerStyles: Record<
-  NonNullable<SectionNavProps["tone"]>,
-  {
-    panel: string;
-    card: string;
-    iconWrap: string;
-    iconColor: string;
-    eyebrow: string;
-    close: string;
-  }
-> = {
-  doctor: {
-    panel:
-      "border-r border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.995)_0%,rgba(15,23,42,0.99)_100%)] text-white",
-    card: "border-white/10 bg-white/6 text-white",
-    iconWrap: "bg-cyan-400/12",
-    iconColor: "text-cyan-200",
-    eyebrow: "text-slate-300/70",
-    close: "border-white/10 bg-white/8 text-white",
-  },
-  elderly: {
-    panel:
-      "border-r border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(248,250,252,0.99)_100%)] text-slate-900",
-    card: "border-slate-200 bg-white text-slate-900",
-    iconWrap: "bg-emerald-500/12",
-    iconColor: "text-emerald-700",
-    eyebrow: "text-slate-500",
-    close: "border-slate-200 bg-white text-slate-900",
-  },
-  admin: {
-    panel:
-      "border-r border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(255,251,235,0.99)_100%)] text-slate-900",
-    card: "border-amber-100 bg-white text-slate-900",
-    iconWrap: "bg-amber-500/12",
-    iconColor: "text-amber-700",
-    eyebrow: "text-slate-500",
-    close: "border-amber-200 bg-white text-slate-900",
-  },
+const drawerToneStyles: Record<NonNullable<SectionNavProps["tone"]>, string> = {
+  doctor:
+    "border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.99)_0%,rgba(15,23,42,0.98)_100%)] text-white",
+  elderly:
+    "border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(248,250,252,0.98)_100%)] text-slate-900",
+  admin:
+    "border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(255,251,235,0.98)_100%)] text-slate-900",
 };
+
+const drawerLinkToneStyles: Record<NonNullable<SectionNavProps["tone"]>, string> =
+  {
+    doctor:
+      "border-white/10 bg-white/5 text-white hover:border-cyan-300/40 hover:bg-white/10",
+    elderly:
+      "border-slate-200 bg-white text-slate-900 hover:border-emerald-200 hover:bg-emerald-50",
+    admin:
+      "border-amber-100 bg-white text-slate-900 hover:border-amber-200 hover:bg-amber-50",
+  };
 
 function MenuIcon() {
   return (
@@ -165,14 +143,8 @@ function ItemIcon({ index }: { index: number }) {
 
 export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const canUseDOM = typeof window !== "undefined" && typeof document !== "undefined";
-  const mobileStyles = mobileDrawerStyles[tone];
 
   useEffect(() => {
-    if (!canUseDOM) {
-      return;
-    }
-
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
 
@@ -202,7 +174,7 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
         }),
       );
     };
-  }, [canUseDOM, isOpen]);
+  }, [isOpen]);
 
   if (!items.length) {
     return null;
@@ -210,12 +182,12 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
 
   return (
     <>
-      <div className="page-section-animate sticky top-3 z-30 mt-5 flex justify-start sm:hidden" data-delay="3">
+      <div className="sticky top-3 z-30 mt-5 flex justify-start sm:hidden">
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           aria-label="Open quick navigation"
-          className={`motion-button inline-flex min-h-[3.15rem] items-center gap-3 rounded-full border px-4 py-2.5 ${mobileButtonToneStyles[tone]}`}
+          className={`inline-flex min-h-[3.15rem] items-center gap-3 rounded-full border px-4 py-2.5 ${mobileButtonToneStyles[tone]}`}
         >
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/12 text-emerald-600">
             <MenuIcon />
@@ -230,8 +202,7 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
       </div>
 
       <nav
-        className={`page-section-animate sticky top-3 z-30 mt-8 hidden overflow-hidden rounded-[1.9rem] border px-4 py-3 backdrop-blur sm:block ${desktopToneStyles[tone]}`}
-        data-delay="3"
+        className={`sticky top-3 z-30 mt-8 hidden overflow-hidden rounded-[1.9rem] border px-4 py-3 backdrop-blur sm:block ${desktopToneStyles[tone]}`}
         aria-label="Section navigation"
       >
         <div className="flex gap-3 overflow-x-auto pb-1">
@@ -252,74 +223,71 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
         </div>
       </nav>
 
-      {isOpen && canUseDOM
-        ? createPortal(
-            <div className="fixed inset-0 z-[80] sm:hidden">
+      {isOpen ? (
+        <div className="fixed inset-0 z-[80] sm:hidden">
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="absolute inset-0 bg-slate-950/38 backdrop-blur-[2px]"
+            onClick={() => setIsOpen(false)}
+          />
+
+          <aside
+            className={`absolute inset-y-0 left-0 z-[81] flex w-[min(82vw,21rem)] flex-col border-r shadow-[0_36px_90px_-42px_rgba(15,23,42,0.6)] ${drawerToneStyles[tone]}`}
+          >
+            <div className="flex items-center justify-between border-b border-slate-200/50 px-5 pb-4 pt-[max(env(safe-area-inset-top),1.5rem)]">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] opacity-60">
+                  Quick navigation
+                </p>
+                <p className="mt-1 text-lg font-black">เมนูทางลัด</p>
+              </div>
+
               <button
                 type="button"
-                aria-label="Close menu"
-                className="absolute inset-0 bg-slate-950/44 backdrop-blur-[3px]"
                 onClick={() => setIsOpen(false)}
-              />
-
-              <aside
-                className={`floating-panel-enter absolute inset-y-0 left-0 z-[81] flex h-full w-[min(84vw,22rem)] flex-col ${mobileStyles.panel}`}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/70 bg-white/90 text-slate-900"
               >
-                <div className="flex items-center justify-between px-5 pb-4 pt-[max(env(safe-area-inset-top),1.5rem)]">
-                  <div>
-                    <p className={`text-xs font-bold uppercase tracking-[0.22em] ${mobileStyles.eyebrow}`}>
-                      Menu
-                    </p>
-                    <p className="mt-1 text-xl font-black">เมนูทางลัด</p>
-                  </div>
+                <CloseIcon />
+              </button>
+            </div>
 
-                  <button
-                    type="button"
+            <div className="px-5 pt-4">
+              <div className="rounded-[1.35rem] border border-slate-200 bg-white/92 px-4 py-3 text-sm leading-6 text-slate-600">
+                เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนนั้นทันที
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <div className="space-y-3">
+                {items.map((item, index) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
                     onClick={() => setIsOpen(false)}
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-full border ${mobileStyles.close}`}
+                    className={`flex items-center gap-3 rounded-[1.35rem] border px-4 py-4 transition ${drawerLinkToneStyles[tone]}`}
                   >
-                    <CloseIcon />
-                  </button>
-                </div>
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                      <ItemIcon index={index} />
+                    </span>
 
-                <div className="px-5 pb-4">
-                  <div className={`rounded-[1.35rem] border px-4 py-3 text-sm leading-6 ${mobileStyles.card}`}>
-                    เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนนั้นทันที
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-4 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
-                  <div className="space-y-3">
-                    {items.map((item, index) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className={`flex items-center gap-3 rounded-[1.35rem] border px-4 py-4 ${mobileStyles.card}`}
-                      >
-                        <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${mobileStyles.iconWrap} ${mobileStyles.iconColor}`}>
-                          <ItemIcon index={index} />
+                    <span className="min-w-0">
+                      {item.eyebrow ? (
+                        <span className="block text-[0.68rem] font-bold uppercase tracking-[0.18em] opacity-60">
+                          {item.eyebrow}
                         </span>
-
-                        <span className="min-w-0">
-                          {item.eyebrow ? (
-                            <span className={`block text-[0.68rem] font-bold uppercase tracking-[0.18em] ${mobileStyles.eyebrow}`}>
-                              {item.eyebrow}
-                            </span>
-                          ) : null}
-                          <span className="block text-base font-bold leading-6">
-                            {item.label}
-                          </span>
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </aside>
-            </div>,
-            document.body,
-          )
-        : null}
+                      ) : null}
+                      <span className="block text-base font-bold leading-6">
+                        {item.label}
+                      </span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </>
   );
 }
