@@ -55,34 +55,35 @@ const mobileDrawerStyles: Record<
     iconColor: string;
     eyebrow: string;
     close: string;
+    helper: string;
   }
 > = {
   doctor: {
-    panel:
-      "border-r border-white/10 bg-[linear-gradient(180deg,rgba(2,6,23,0.995)_0%,rgba(15,23,42,0.99)_100%)] text-white",
-    card: "border-white/10 bg-white/6 text-white",
+    panel: "border-r border-white/10 bg-slate-950 text-white shadow-2xl",
+    card: "border-white/10 bg-slate-900 text-white",
     iconWrap: "bg-cyan-400/12",
     iconColor: "text-cyan-200",
     eyebrow: "text-slate-300/70",
-    close: "border-white/10 bg-white/8 text-white",
+    close: "border-white/10 bg-slate-900 text-white",
+    helper: "border-white/10 bg-slate-900/80 text-slate-200",
   },
   elderly: {
-    panel:
-      "border-r border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(248,250,252,0.99)_100%)] text-slate-900",
+    panel: "border-r border-slate-200 bg-white text-slate-900 shadow-2xl",
     card: "border-slate-200 bg-white text-slate-900",
     iconWrap: "bg-emerald-500/12",
     iconColor: "text-emerald-700",
     eyebrow: "text-slate-500",
     close: "border-slate-200 bg-white text-slate-900",
+    helper: "border-slate-200 bg-slate-50 text-slate-600",
   },
   admin: {
-    panel:
-      "border-r border-amber-200/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.995)_0%,rgba(255,251,235,0.99)_100%)] text-slate-900",
+    panel: "border-r border-amber-200 bg-white text-slate-900 shadow-2xl",
     card: "border-amber-100 bg-white text-slate-900",
     iconWrap: "bg-amber-500/12",
     iconColor: "text-amber-700",
     eyebrow: "text-slate-500",
     close: "border-amber-200 bg-white text-slate-900",
+    helper: "border-amber-100 bg-amber-50 text-slate-600",
   },
 };
 
@@ -258,14 +259,15 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
               <button
                 type="button"
                 aria-label="Close menu"
-                className="absolute inset-0 bg-slate-950/44 backdrop-blur-[3px]"
+                className="absolute inset-0 bg-slate-950/46"
                 onClick={() => setIsOpen(false)}
               />
 
               <aside
-                className={`floating-panel-enter absolute inset-y-0 left-0 z-[81] flex h-full w-[min(84vw,22rem)] flex-col ${mobileStyles.panel}`}
+                className={`absolute inset-y-0 left-0 z-[81] flex h-full min-h-0 w-[min(84vw,22rem)] flex-col ${mobileStyles.panel}`}
+                aria-label="Quick navigation menu"
               >
-                <div className="flex items-center justify-between px-5 pb-4 pt-[max(env(safe-area-inset-top),1.5rem)]">
+                <div className="flex items-center justify-between px-5 pb-4 pt-[max(env(safe-area-inset-top),1.25rem)]">
                   <div>
                     <p className={`text-xs font-bold uppercase tracking-[0.22em] ${mobileStyles.eyebrow}`}>
                       Menu
@@ -283,7 +285,7 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
                 </div>
 
                 <div className="px-5 pb-4">
-                  <div className={`rounded-[1.35rem] border px-4 py-3 text-sm leading-6 ${mobileStyles.card}`}>
+                  <div className={`rounded-[1.35rem] border px-4 py-3 text-sm leading-6 ${mobileStyles.helper}`}>
                     เลือกหัวข้อที่ต้องการ แล้วระบบจะเลื่อนไปยังส่วนนั้นทันที
                   </div>
                 </div>
@@ -295,7 +297,7 @@ export function SectionNav({ items, tone = "elderly" }: SectionNavProps) {
                         key={item.href}
                         href={item.href}
                         onClick={() => setIsOpen(false)}
-                        className={`flex items-center gap-3 rounded-[1.35rem] border px-4 py-4 ${mobileStyles.card}`}
+                        className={`flex items-center gap-3 rounded-[1.35rem] border px-4 py-4 shadow-[0_12px_28px_-24px_rgba(15,23,42,0.35)] ${mobileStyles.card}`}
                       >
                         <span className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${mobileStyles.iconWrap} ${mobileStyles.iconColor}`}>
                           <ItemIcon index={index} />
