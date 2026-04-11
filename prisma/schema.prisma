@@ -53,7 +53,9 @@ model User {
   id                     String                @id @default(cuid())
   name                   String
   email                  String                @unique
-  passwordHash           String
+  emailVerified          DateTime?
+  image                  String?
+  passwordHash           String?
   role                   Role                  @default(ELDERLY)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
@@ -89,6 +91,8 @@ model ElderlyProfile {
   caseStatus        CaseStatus          @default(SELF_SERVICE)
   doctorRequestNote String?
   doctorRequestedAt DateTime?
+  onboardingRequired Boolean           @default(false)
+  profileCompletedAt DateTime?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 

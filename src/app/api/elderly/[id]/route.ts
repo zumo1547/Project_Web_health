@@ -1,5 +1,6 @@
 import { DoctorCaseStatus, Role } from "@/generated/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { hasCompletedGeneralProfile } from "@/lib/elderly-profile";
 import {
   assertElderlyAccess,
   permissionErrorToResponse,
@@ -95,6 +96,37 @@ export async function PATCH(req: Request, context: RouteContext) {
       );
     }
 
+    const existing = await prisma.elderlyProfile.findUnique({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        birthDate: true,
+        phone: true,
+      },
+    });
+
+    if (!existing) {
+      return Response.json({ error: "ไม่พบข้อมูลผู้สูงอายุ" }, { status: 404 });
+    }
+
+    const nextProfile = {
+      firstName: parsed.data.firstName ?? existing.firstName,
+      lastName: parsed.data.lastName ?? existing.lastName,
+      birthDate:
+        parsed.data.birthDate === undefined
+          ? existing.birthDate
+          : parsed.data.birthDate
+            ? new Date(parsed.data.birthDate)
+            : null,
+      phone: parsed.data.phone ?? existing.phone,
+    };
+
+    const isProfileComplete = hasCompletedGeneralProfile(nextProfile);
+
     const updated = await prisma.elderlyProfile.update({
       where: { id },
       data: {
@@ -103,13 +135,26 @@ export async function PATCH(req: Request, context: RouteContext) {
         nationalId: parsed.data.nationalId,
         birthDate: parsed.data.birthDate
           ? new Date(parsed.data.birthDate)
-          : undefined,
-        gender: parsed.data.gender,
-        phone: parsed.data.phone,
-        address: parsed.data.address,
-        allergies: parsed.data.allergies,
-        chronicDiseases: parsed.data.chronicDiseases,
-        notes: parsed.data.notes,
+          : parsed.data.birthDate === undefined
+            ? undefined
+            : null,
+        gender:
+          parsed.data.gender === undefined ? undefined : parsed.data.gender ?? null,
+        phone:
+          parsed.data.phone === undefined ? undefined : parsed.data.phone ?? null,
+        address:
+          parsed.data.address === undefined ? undefined : parsed.data.address ?? null,
+        allergies:
+          parsed.data.allergies === undefined
+            ? undefined
+            : parsed.data.allergies ?? null,
+        chronicDiseases:
+          parsed.data.chronicDiseases === undefined
+            ? undefined
+            : parsed.data.chronicDiseases ?? null,
+        notes: parsed.data.notes === undefined ? undefined : parsed.data.notes ?? null,
+        onboardingRequired: isProfileComplete ? false : undefined,
+        profileCompletedAt: isProfileComplete ? new Date() : undefined,
       },
     });
 

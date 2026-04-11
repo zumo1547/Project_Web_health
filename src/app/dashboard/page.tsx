@@ -9,5 +9,9 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  if (session.user.role === "ELDERLY" && session.user.onboardingRequired) {
+    redirect("/complete-profile");
+  }
+
   redirect(getDefaultPortalPath(session.user.role));
 }

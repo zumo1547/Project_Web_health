@@ -45,7 +45,15 @@ export default async function ElderlyPortalPage() {
     redirect("/dashboard");
   }
 
+  if (session.user.onboardingRequired) {
+    redirect("/complete-profile");
+  }
+
   const ensuredProfile = await ensureElderlyProfileForUser(session.user.id);
+
+  if (ensuredProfile.onboardingRequired) {
+    redirect("/complete-profile");
+  }
 
   const elderly = await prisma.elderlyProfile.findUniqueOrThrow({
     where: {

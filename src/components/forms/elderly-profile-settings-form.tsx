@@ -22,11 +22,21 @@ type ElderlyProfileSettingsFormProps = {
     chronicDiseases?: string | null;
     notes?: string | null;
   };
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+  successMessage?: string;
+  afterSaveUrl?: string;
 };
 
 export function ElderlyProfileSettingsForm({
   elderlyId,
   profile,
+  title = "ตั้งค่าแฟ้มสุขภาพ",
+  description = "ปรับข้อมูลส่วนตัว โรคประจำตัว อาการแพ้ และหมายเหตุให้เป็นปัจจุบัน",
+  submitLabel = "บันทึกข้อมูลแฟ้มสุขภาพ",
+  successMessage = "อัปเดตแฟ้มผู้สูงอายุเรียบร้อยแล้ว",
+  afterSaveUrl,
 }: ElderlyProfileSettingsFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -73,8 +83,12 @@ export function ElderlyProfileSettingsForm({
       return;
     }
 
-    setMessage("อัปเดตแฟ้มผู้สูงอายุเรียบร้อยแล้ว");
+    setMessage(successMessage);
     startTransition(() => {
+      if (afterSaveUrl) {
+        router.push(afterSaveUrl);
+      }
+
       router.refresh();
     });
   }
@@ -82,10 +96,8 @@ export function ElderlyProfileSettingsForm({
   return (
     <Card className="border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.96)_0%,rgba(240,253,244,0.96)_100%)]">
       <div className="space-y-2">
-        <CardTitle>ตั้งค่าแฟ้มสุขภาพ</CardTitle>
-        <CardDescription>
-          ปรับข้อมูลส่วนตัว โรคประจำตัว อาการแพ้ และหมายเหตุให้เป็นปัจจุบัน
-        </CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </div>
 
       <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
@@ -105,8 +117,10 @@ export function ElderlyProfileSettingsForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">วันเกิด</span>
-          <Input name="birthDate" type="date" defaultValue={profile.birthDate ?? ""} />
+          <span className="text-sm font-medium text-slate-700">
+            วันเกิด <span className="text-rose-600">*</span>
+          </span>
+          <Input name="birthDate" type="date" defaultValue={profile.birthDate ?? ""} required />
         </label>
 
         <label className="space-y-2">
@@ -120,8 +134,10 @@ export function ElderlyProfileSettingsForm({
         </label>
 
         <label className="space-y-2">
-          <span className="text-sm font-medium text-slate-700">เบอร์โทร</span>
-          <Input name="phone" defaultValue={profile.phone ?? ""} />
+          <span className="text-sm font-medium text-slate-700">
+            เบอร์โทร <span className="text-rose-600">*</span>
+          </span>
+          <Input name="phone" defaultValue={profile.phone ?? ""} required />
         </label>
 
         <label className="space-y-2 md:col-span-2">
@@ -166,7 +182,7 @@ export function ElderlyProfileSettingsForm({
 
         <div className="md:col-span-2">
           <Button type="submit" fullWidth disabled={isPending}>
-            {isPending ? "กำลังบันทึก..." : "บันทึกข้อมูลแฟ้มสุขภาพ"}
+            {isPending ? "กำลังบันทึก..." : submitLabel}
           </Button>
         </div>
       </form>

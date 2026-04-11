@@ -94,6 +94,8 @@ export async function POST(req: Request) {
             firstName: names.firstName,
             lastName: names.lastName,
             caseStatus: CaseStatus.SELF_SERVICE,
+            onboardingRequired: false,
+            profileCompletedAt: new Date(),
             notes: "สร้างแฟ้มอัตโนมัติจากการสมัครบัญชี",
           },
         });

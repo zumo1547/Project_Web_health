@@ -24,6 +24,22 @@ function splitDisplayName(name: string) {
   };
 }
 
+export type BasicProfileFields = {
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: Date | string | null;
+  phone?: string | null;
+};
+
+export function hasCompletedGeneralProfile(profile: BasicProfileFields) {
+  return Boolean(
+    profile.firstName?.trim() &&
+      profile.lastName?.trim() &&
+      profile.phone?.trim() &&
+      profile.birthDate,
+  );
+}
+
 export async function ensureElderlyProfileForUser(userId: string) {
   const user = await prisma.user.findUnique({
     where: {
@@ -50,6 +66,7 @@ export async function ensureElderlyProfileForUser(userId: string) {
       firstName: names.firstName,
       lastName: names.lastName,
       caseStatus: CaseStatus.SELF_SERVICE,
+      onboardingRequired: false,
       notes: "สร้างแฟ้มอัตโนมัติจากการสมัครใช้งานครั้งแรก",
     },
   });

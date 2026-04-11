@@ -8,6 +8,10 @@ export default async function RegisterPage() {
   const session = await auth();
 
   if (session?.user) {
+    if (session.user.role === "ELDERLY" && session.user.onboardingRequired) {
+      redirect("/complete-profile");
+    }
+
     redirect(getDefaultPortalPath(session.user.role));
   }
 
@@ -22,12 +26,13 @@ export default async function RegisterPage() {
             สมัครแอปตรวจสุขภาพผู้สูงอายุ
           </h1>
           <p className="max-w-2xl text-lg leading-8 text-slate-600">
-            สมัครได้เฉพาะผู้สูงอายุทั่วไปเท่านั้น ไม่ต้องเลือกประเภทบัญชีให้สับสน
-            สมัครเสร็จแล้วระบบจะพาเข้าสู่หน้าแอปของคุณทันที
+            สมัครได้เฉพาะผู้สูงอายุทั่วไปเท่านั้น ไม่ต้องเลือกประเภทบัญชีให้สับสน สมัครเสร็จแล้วระบบจะพาเข้าสู่หน้าแอปของคุณทันที
           </p>
 
           <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-            <p className="text-base font-bold text-slate-950">หลังสมัครเสร็จทำอะไรได้บ้าง</p>
+            <p className="text-base font-bold text-slate-950">
+              หลังสมัครเสร็จทำอะไรได้บ้าง
+            </p>
             <div className="mt-4 space-y-2 text-base leading-8 text-slate-700">
               <p>1. เริ่มตรวจความดันและสแกนยาได้ทันที</p>
               <p>2. ดูแฟ้มสุขภาพย้อนหลังและสถิติของตัวเอง</p>

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useId, useState, useTransition } from "react";
 
 type LoginPortal = "USER" | "DOCTOR" | "ADMIN";
+type SocialProvider = "google" | "facebook";
 
 type LoginFormProps = {
   defaultCallbackUrl: string;
@@ -16,6 +17,7 @@ type LoginFormProps = {
   title: string;
   description: string;
   accent: "user" | "doctor" | "admin";
+  socialProviders?: SocialProvider[];
 };
 
 type RememberedLogin = {
@@ -57,6 +59,40 @@ const accentStyles: Record<
 
 function formatDate(value: string) {
   return formatSystemDateTime(value);
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M21.8 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.5c-.2 1.2-.9 2.2-1.9 2.9v2.4h3.1c1.8-1.7 3.1-4.2 3.1-7.1Z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 22c2.7 0 5- .9 6.7-2.6l-3.1-2.4c-.9.6-2.1 1-3.6 1-2.7 0-5-1.8-5.8-4.3H3v2.5A10 10 0 0 0 12 22Z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M6.2 13.7A6 6 0 0 1 5.9 12c0-.6.1-1.2.3-1.7V7.8H3A10 10 0 0 0 2 12c0 1.6.4 3.2 1 4.5l3.2-2.8Z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 6c1.5 0 2.8.5 3.8 1.4l2.8-2.8A10 10 0 0 0 3 7.8l3.2 2.5C7 7.8 9.3 6 12 6Z"
+      />
+    </svg>
+  );
+}
+
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="#1877F2"
+        d="M24 12a12 12 0 1 0-13.9 11.8v-8.3H7.1V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.3l-.5 3.5h-2.8v8.3A12 12 0 0 0 24 12Z"
+      />
+    </svg>
+  );
 }
 
 function loadRememberedLogins(portal: LoginPortal) {
@@ -154,7 +190,7 @@ function rememberLoginAccount(email: string, portal: LoginPortal) {
       JSON.stringify(nextRecords.slice(0, 8)),
     );
   } catch {
-    // Ignore local storage errors and continue login flow normally.
+    // Ignore local storage issues.
   }
 }
 
@@ -164,6 +200,7 @@ export function LoginForm({
   title,
   description,
   accent,
+  socialProviders = [],
 }: LoginFormProps) {
   const router = useRouter();
   const passwordInputId = useId();
@@ -172,6 +209,7 @@ export function LoginForm({
   const [rememberedLogins, setRememberedLogins] = useState<RememberedLogin[]>([]);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isSocialPending, setIsSocialPending] = useState<SocialProvider | null>(null);
   const styles = accentStyles[accent];
 
   useEffect(() => {
@@ -206,6 +244,20 @@ export function LoginForm({
     });
   }
 
+  async function handleSocialSignIn(provider: SocialProvider) {
+    try {
+      setError("");
+      setIsSocialPending(provider);
+
+      await signIn(provider, {
+        callbackUrl: defaultCallbackUrl,
+      });
+    } catch {
+      setError("ไม่สามารถเริ่มการเข้าสู่ระบบผ่านบัญชีภายนอกได้ในตอนนี้");
+      setIsSocialPending(null);
+    }
+  }
+
   function handlePickRememberedLogin(nextEmail: string) {
     setEmail(nextEmail);
     setPassword("");
@@ -215,6 +267,8 @@ export function LoginForm({
       document.getElementById(passwordInputId)?.focus();
     });
   }
+
+  const showSocialLogin = portal === "USER" && socialProviders.length > 0;
 
   return (
     <Card className={`mx-auto max-w-lg ${styles.card}`}>
@@ -226,9 +280,55 @@ export function LoginForm({
         <CardDescription>{description}</CardDescription>
       </div>
 
+      {showSocialLogin ? (
+        <div className="mt-6 rounded-[1.6rem] border border-white/70 bg-white/80 p-5">
+          <p className="text-base font-bold text-slate-950">
+            เข้าระบบด้วย Google หรือ Facebook
+          </p>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            เหมาะกับการเริ่มใช้งานเร็ว หลังล็อกอินครั้งแรกระบบจะพาไปกรอกข้อมูลทั่วไปของผู้สูงอายุให้ครบก่อนเข้าแอป
+          </p>
+          <div className="mt-4 grid gap-3">
+            {socialProviders.includes("google") ? (
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+                onClick={() => handleSocialSignIn("google")}
+                disabled={Boolean(isSocialPending)}
+                className="justify-start gap-3 rounded-[1.4rem] border border-slate-200 bg-white px-4 text-slate-900 hover:border-emerald-200 hover:bg-emerald-50"
+              >
+                <GoogleIcon />
+                {isSocialPending === "google"
+                  ? "กำลังพาไปยัง Google..."
+                  : "เข้าสู่ระบบด้วย Google"}
+              </Button>
+            ) : null}
+
+            {socialProviders.includes("facebook") ? (
+              <Button
+                type="button"
+                variant="ghost"
+                fullWidth
+                onClick={() => handleSocialSignIn("facebook")}
+                disabled={Boolean(isSocialPending)}
+                className="justify-start gap-3 rounded-[1.4rem] border border-slate-200 bg-white px-4 text-slate-900 hover:border-sky-200 hover:bg-sky-50"
+              >
+                <FacebookIcon />
+                {isSocialPending === "facebook"
+                  ? "กำลังพาไปยัง Facebook..."
+                  : "เข้าสู่ระบบด้วย Facebook"}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       {rememberedLogins.length > 0 ? (
         <div className="mt-6 rounded-[1.6rem] border border-white/70 bg-white/80 p-5">
-          <p className="text-base font-bold text-slate-950">บัญชีที่ใช้บ่อยในเครื่องนี้</p>
+          <p className="text-base font-bold text-slate-950">
+            บัญชีที่ใช้บ่อยในเครื่องนี้
+          </p>
           <p className="mt-2 text-sm leading-7 text-slate-600">
             กดเลือกบัญชีก่อน แล้วค่อยกรอกรหัสผ่านเพื่อเข้าสู่ระบบ
           </p>
@@ -254,9 +354,9 @@ export function LoginForm({
       ) : null}
 
       <div className="mt-6 rounded-[1.6rem] border border-white/70 bg-white/80 p-5">
-        <p className="text-base font-bold text-slate-950">ก่อนเข้าสู่ระบบ</p>
+        <p className="text-base font-bold text-slate-950">เข้าสู่ระบบด้วยอีเมล</p>
         <p className="mt-2 text-sm leading-7 text-slate-600">
-          ตรวจสอบว่าใช้อีเมลและรหัสผ่านของพอร์ทัลนี้โดยตรง เพื่อให้ระบบพาไปยังหน้าที่ถูกต้องทันที
+          ถ้ามีบัญชีเดิมอยู่แล้ว สามารถใช้อีเมลและรหัสผ่านเดิมเข้าได้ตามปกติ
         </p>
       </div>
 
@@ -294,7 +394,7 @@ export function LoginForm({
           </p>
         ) : null}
 
-        <Button type="submit" fullWidth disabled={isPending} className={styles.button}>
+        <Button type="submit" fullWidth disabled={isPending || Boolean(isSocialPending)} className={styles.button}>
           {isPending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
         </Button>
       </form>
