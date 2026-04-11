@@ -125,6 +125,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: process.env.AUTH_FACEBOOK_ID!,
             clientSecret: process.env.AUTH_FACEBOOK_SECRET!,
             allowDangerousEmailAccountLinking: true,
+            authorization: {
+              params: {
+                scope: "email,public_profile",
+              },
+            },
+            profile(profile) {
+              const normalizedName =
+                typeof profile.name === "string" && profile.name.trim()
+                  ? profile.name.trim()
+                  : "Facebook User";
+
+              const fallbackEmail =
+                typeof profile.id === "string" && profile.id.trim()
+                  ? `${profile.id}@facebook.local`
+                  : null;
+
+              return {
+                id: String(profile.id),
+                name: normalizedName,
+                email:
+                  typeof profile.email === "string" && profile.email.trim()
+                    ? profile.email.trim().toLowerCase()
+                    : fallbackEmail,
+                image:
+                  typeof profile.picture?.data?.url === "string"
+                    ? profile.picture.data.url
+                    : null,
+              };
+            },
           }),
         ]
       : []),
