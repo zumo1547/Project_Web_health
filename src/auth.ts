@@ -17,17 +17,35 @@ const facebookEnabled = Boolean(
   process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET,
 );
 
-async function syncOAuthElderlyUser(userId: string) {
-  const dbUser = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      elderlyProfile: true,
-    },
-  });
+async function syncOAuthElderlyUser(userId?: string, email?: string | null) {
+  const normalizedEmail = email?.trim().toLowerCase();
+  const dbUser = userId
+    ? await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        include: {
+          elderlyProfile: true,
+        },
+      })
+    : normalizedEmail
+      ? await prisma.user.findUnique({
+          where: {
+            email: normalizedEmail,
+          },
+          include: {
+            elderlyProfile: true,
+          },
+        })
+      : null;
 
-  if (!dbUser || dbUser.role !== Role.ELDERLY) {
+  // Let first-time OAuth sign-ins continue so the adapter can create the user.
+  // If a matching account already exists, we still enforce the elderly portal role.
+  if (!dbUser) {
+    return true;
+  }
+
+  if (dbUser.role !== Role.ELDERLY) {
     return false;
   }
 
@@ -117,11 +135,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
-      if (!user.id) {
-        return false;
-      }
-
-      return syncOAuthElderlyUser(user.id);
+      return syncOAuthElderlyUser(user.id, user.email);
     },
     async jwt({ token, user }) {
       if (user) {
