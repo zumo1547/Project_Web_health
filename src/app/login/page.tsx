@@ -32,22 +32,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_28%),linear-gradient(180deg,#f8fffc_0%,#eef8f2_54%,#f7efe1_100%)]">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:items-center">
+        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.86fr)] lg:items-center">
           <AuthShowcase
             eyebrow="แอปตรวจสุขภาพผู้สูงอายุ"
             title="เข้าสู่ระบบผู้สูงอายุ"
-            description="เว็บนี้ช่วยตรวจยา อ่านค่าความดัน เก็บแฟ้มสุขภาพย้อนหลัง และติดต่อ AI หรือคุณหมอได้จากหน้าเดียว โดยออกแบบให้ใช้งานง่ายทั้งมือถือและคอมพิวเตอร์"
+            description="ใช้ตรวจความดัน สแกนยา เก็บข้อมูลสุขภาพย้อนหลัง และขอคำแนะนำจาก AI ได้จากหน้าเดียว ออกแบบให้ใช้งานง่ายทั้งบนมือถือและคอมพิวเตอร์"
             supportItems={[
-              "ถ่ายรูปยาและค่าความดันเพื่อให้ระบบช่วยสรุปข้อมูลเบื้องต้นได้",
-              "เก็บประวัติสุขภาพ รายการยา และข้อความสำคัญไว้ดูย้อนหลังได้ตลอดเวลา",
+              "สแกนรูปยาและรูปค่าความดันเพื่อให้ระบบช่วยอ่านและสรุปข้อมูลเบื้องต้น",
+              "เก็บประวัติสุขภาพ รายการยา และข้อมูลสำคัญไว้ดูย้อนหลังได้ตลอดเวลา",
               "ขอคำแนะนำจาก AI หรือส่งข้อมูลให้คุณหมอดูต่อได้ทันทีเมื่อมีอาการผิดปกติ",
             ]}
-            audienceItems={["ผู้สูงอายุ", "ลูกหลานหรือผู้ดูแล", "คุณหมอและแอดมิน"]}
-            quickLinks={[
-              { href: "/doctor-login", label: "เข้าสู่ระบบคุณหมอ" },
-              { href: "/admin-login", label: "เข้าสู่ระบบแอดมิน" },
-              { href: "/register", label: "สมัครผู้สูงอายุด้วยอีเมล" },
-            ]}
+            audienceItems={["ผู้สูงอายุ", "ครอบครัว", "ผู้ดูแลสุขภาพ"]}
+            quickLinks={[{ href: "/register", label: "ยังไม่มีบัญชี? สมัครสมาชิก" }]}
+            quickLinksTitle="เริ่มต้นสำหรับผู้ใช้ใหม่"
             tone="sky"
           />
 
@@ -58,7 +55,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               accent="user"
               socialProviders={socialProviders}
               title="เข้าสู่แอปผู้สูงอายุ"
-              description="เลือกเข้าสู่ระบบด้วยอีเมลเดิม หรือใช้ Google / Facebook เพื่อเริ่มใช้งานได้รวดเร็วขึ้น"
+              description="เข้าสู่ระบบด้วยอีเมลเดิม หรือใช้ Google / Facebook เพื่อเริ่มใช้งานได้อย่างรวดเร็ว"
             />
           </div>
         </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   SocialAuthButtons,
   type SocialProvider,
@@ -204,9 +206,7 @@ export function LoginForm({
     });
 
     if (result?.error) {
-      setError(
-        "อีเมลหรือรหัสผ่านไม่ถูกต้อง หรือบัญชีนี้ไม่มีสิทธิ์เข้าใช้งานหน้านี้",
-      );
+      setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาตรวจสอบแล้วลองใหม่อีกครั้ง");
       return;
     }
 
@@ -231,10 +231,11 @@ export function LoginForm({
   }
 
   const showSocialLogin = portal === "USER" && socialProviders.length > 0;
+  const showRegisterPrompt = portal === "USER";
 
   return (
     <Card
-      className={`mx-auto w-full max-w-[36rem] rounded-[2.4rem] ${styles.card} ${className}`}
+      className={`mx-auto w-full max-w-[35rem] rounded-[2.25rem] ${styles.card} ${className}`}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -257,8 +258,8 @@ export function LoginForm({
           <SocialAuthButtons
             providers={socialProviders}
             callbackUrl={defaultCallbackUrl}
-            title="เริ่มใช้งานเร็วด้วย Google หรือ Facebook"
-            description="เหมาะกับการเข้าสู่ระบบครั้งแรก หลังล็อกอินระบบจะพาไปกรอกข้อมูลพื้นฐานของผู้สูงอายุให้ครบก่อนใช้งานจริง"
+            title="เริ่มใช้งานด้วย Google หรือ Facebook"
+            description="เหมาะสำหรับผู้ใช้ใหม่ เข้าระบบครั้งแรกแล้วค่อยกรอกข้อมูลพื้นฐานให้ครบก่อนเริ่มใช้งานจริง"
             tone={styles.socialTone}
           />
         </div>
@@ -268,7 +269,7 @@ export function LoginForm({
         <div className="space-y-2">
           <p className="text-base font-bold text-slate-950">เข้าสู่ระบบด้วยอีเมล</p>
           <p className="text-sm leading-7 text-slate-600">
-            ถ้ามีบัญชีเดิมอยู่แล้ว สามารถใช้อีเมลและรหัสผ่านเดิมเข้าใช้งานได้ตามปกติ
+            ถ้ามีบัญชีเดิมอยู่แล้ว สามารถใช้อีเมลและรหัสผ่านเดิมเข้าสู่ระบบได้ตามปกติ
           </p>
         </div>
 
@@ -311,6 +312,21 @@ export function LoginForm({
           </Button>
         </form>
       </div>
+
+      {showRegisterPrompt ? (
+        <div className="mt-6 rounded-[1.7rem] border border-emerald-100 bg-white/80 p-5 sm:p-6">
+          <p className="text-base font-bold text-slate-950">ยังไม่มีบัญชีใช่ไหม?</p>
+          <p className="mt-1 text-sm leading-7 text-slate-600">
+            สมัครสมาชิกก่อน แล้วค่อยกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
+          </p>
+          <Link
+            href="/register"
+            className="mt-4 inline-flex rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
+          >
+            สมัครสมาชิก
+          </Link>
+        </div>
+      ) : null}
 
       {rememberedLogins.length > 0 ? (
         <div className="mt-6 rounded-[1.7rem] border border-white/80 bg-white/76 p-5 sm:p-6">

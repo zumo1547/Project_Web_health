@@ -1,15 +1,19 @@
 import Link from "next/link";
 
+type AuthShowcaseLink = {
+  href: string;
+  label: string;
+};
+
 type AuthShowcaseProps = {
   eyebrow: string;
   title: string;
   description: string;
   supportItems: string[];
   audienceItems: string[];
-  quickLinks: Array<{
-    href: string;
-    label: string;
-  }>;
+  quickLinks: AuthShowcaseLink[];
+  supportTitle?: string;
+  quickLinksTitle?: string;
   tone?: "emerald" | "sky" | "amber";
 };
 
@@ -52,6 +56,8 @@ export function AuthShowcase({
   supportItems,
   audienceItems,
   quickLinks,
+  supportTitle = "เว็บนี้ช่วยอะไรได้บ้าง",
+  quickLinksTitle = "เริ่มต้นใช้งาน",
   tone = "emerald",
 }: AuthShowcaseProps) {
   const styles = toneClasses[tone];
@@ -96,7 +102,7 @@ export function AuthShowcase({
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <div className={`rounded-[2rem] p-5 sm:p-6 ${styles.card}`}>
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-white/65">
-              เว็บนี้ช่วยอะไรได้บ้าง
+              {supportTitle}
             </p>
             <div className="mt-4 space-y-3 text-sm leading-7 sm:text-base">
               {supportItems.map((item, index) => (
@@ -112,7 +118,7 @@ export function AuthShowcase({
 
           <div className={`rounded-[2rem] p-5 sm:p-6 ${styles.card}`}>
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-white/65">
-              ทางเข้าที่ใช้บ่อย
+              {quickLinksTitle}
             </p>
             <div className="mt-4 space-y-3">
               {quickLinks.map((link) => (
