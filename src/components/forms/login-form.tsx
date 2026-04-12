@@ -194,7 +194,6 @@ export function LoginForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setError("");
 
     const result = await signIn("credentials", {
@@ -235,7 +234,7 @@ export function LoginForm({
 
   return (
     <Card
-      className={`mx-auto w-full max-w-[35rem] rounded-[2.25rem] ${styles.card} ${className}`}
+      className={`mx-auto w-full max-w-[32rem] rounded-[2.2rem] ${styles.card} ${className}`}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -248,24 +247,52 @@ export function LoginForm({
         </div>
 
         <div className="space-y-3">
-          <CardTitle className="text-[1.9rem] sm:text-[2.15rem]">{title}</CardTitle>
+          <CardTitle className="text-[1.9rem] sm:text-[2.1rem]">{title}</CardTitle>
           <CardDescription className="max-w-xl">{description}</CardDescription>
         </div>
       </div>
 
       {showSocialLogin ? (
-        <div className="mt-6">
+        <div className="mt-5">
           <SocialAuthButtons
             providers={socialProviders}
             callbackUrl={defaultCallbackUrl}
             title="เริ่มใช้งานด้วย Google หรือ Facebook"
-            description="เหมาะสำหรับผู้ใช้ใหม่ เข้าระบบครั้งแรกแล้วค่อยกรอกข้อมูลพื้นฐานให้ครบก่อนเริ่มใช้งานจริง"
+            description="เหมาะสำหรับผู้ใช้ใหม่ กดครั้งเดียวแล้วค่อยกรอกข้อมูลพื้นฐานต่อได้เลย"
             tone={styles.socialTone}
           />
         </div>
       ) : null}
 
-      <div className="mt-6 rounded-[1.7rem] border border-white/80 bg-white/80 p-5 sm:p-6">
+      {rememberedLogins.length > 0 ? (
+        <div className="mt-5 rounded-[1.55rem] border border-white/80 bg-white/80 p-5">
+          <p className="text-base font-bold text-slate-950">บัญชีที่ใช้บ่อยในเครื่องนี้</p>
+          <p className="mt-1 text-sm leading-7 text-slate-600">
+            กดเลือกบัญชีก่อน แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบได้ทันที
+          </p>
+
+          <div className="mt-4 grid gap-3">
+            {rememberedLogins.map((item) => (
+              <button
+                key={`${item.portal}-${item.email}`}
+                type="button"
+                onClick={() => handlePickRememberedLogin(item.email)}
+                className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              >
+                <p className="text-base font-bold text-slate-950">{item.email}</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  ใช้งานแล้ว {item.usageCount} ครั้ง
+                </p>
+                <p className="mt-1 text-xs text-slate-400">
+                  ใช้ล่าสุด {formatDate(item.lastUsedAt)}
+                </p>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mt-5 rounded-[1.55rem] border border-white/80 bg-white/80 p-5 sm:p-6">
         <div className="space-y-2">
           <p className="text-base font-bold text-slate-950">เข้าสู่ระบบด้วยอีเมล</p>
           <p className="text-sm leading-7 text-slate-600">
@@ -302,7 +329,7 @@ export function LoginForm({
           </label>
 
           {error ? (
-            <p className="rounded-[1.3rem] bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-700">
+            <p className="rounded-[1.2rem] bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-700">
               {error}
             </p>
           ) : null}
@@ -314,47 +341,17 @@ export function LoginForm({
       </div>
 
       {showRegisterPrompt ? (
-        <div className="mt-6 rounded-[1.7rem] border border-emerald-100 bg-white/80 p-5 sm:p-6">
+        <div className="mt-5 rounded-[1.55rem] border border-emerald-100 bg-white/80 p-5">
           <p className="text-base font-bold text-slate-950">ยังไม่มีบัญชีใช่ไหม?</p>
           <p className="mt-1 text-sm leading-7 text-slate-600">
-            สมัครสมาชิกก่อน แล้วค่อยกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
+            สมัครสมาชิกก่อน แล้วกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
           </p>
           <Link
             href="/register"
-            className="mt-4 inline-flex rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
+            className="mt-4 inline-flex rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
           >
             สมัครสมาชิก
           </Link>
-        </div>
-      ) : null}
-
-      {rememberedLogins.length > 0 ? (
-        <div className="mt-6 rounded-[1.7rem] border border-white/80 bg-white/76 p-5 sm:p-6">
-          <p className="text-base font-bold text-slate-950">
-            บัญชีที่ใช้บ่อยในเครื่องนี้
-          </p>
-          <p className="mt-1 text-sm leading-7 text-slate-600">
-            กดเลือกบัญชีก่อน แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบได้ทันที
-          </p>
-
-          <div className="mt-4 grid gap-3">
-            {rememberedLogins.map((item) => (
-              <button
-                key={`${item.portal}-${item.email}`}
-                type="button"
-                onClick={() => handlePickRememberedLogin(item.email)}
-                className="rounded-[1.35rem] border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
-              >
-                <p className="text-base font-bold text-slate-950">{item.email}</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  ใช้กับพอร์ทัลนี้แล้ว {item.usageCount} ครั้ง
-                </p>
-                <p className="mt-1 text-xs text-slate-400">
-                  ใช้ล่าสุด {formatDate(item.lastUsedAt)}
-                </p>
-              </button>
-            ))}
-          </div>
         </div>
       ) : null}
     </Card>

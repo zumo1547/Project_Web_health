@@ -28,21 +28,21 @@ const toneClasses: Record<
 > = {
   emerald: {
     panel:
-      "bg-[linear-gradient(135deg,#065f46_0%,#0f172a_52%,#0f766e_100%)] text-white",
+      "bg-[linear-gradient(140deg,#065f46_0%,#0f172a_48%,#0f766e_100%)] text-white",
     pill: "bg-white/14 text-emerald-100 ring-1 ring-white/15",
     card: "bg-white/10 text-white/92 ring-1 ring-white/12",
     link: "text-emerald-100 hover:text-white",
   },
   sky: {
     panel:
-      "bg-[linear-gradient(135deg,#0f4c81_0%,#0f172a_52%,#0f766e_100%)] text-white",
+      "bg-[linear-gradient(140deg,#0f4c81_0%,#0f172a_48%,#0f766e_100%)] text-white",
     pill: "bg-white/14 text-sky-100 ring-1 ring-white/15",
     card: "bg-white/10 text-white/92 ring-1 ring-white/12",
     link: "text-sky-100 hover:text-white",
   },
   amber: {
     panel:
-      "bg-[linear-gradient(135deg,#92400e_0%,#0f172a_54%,#b45309_100%)] text-white",
+      "bg-[linear-gradient(140deg,#92400e_0%,#0f172a_50%,#b45309_100%)] text-white",
     pill: "bg-white/14 text-amber-100 ring-1 ring-white/15",
     card: "bg-white/10 text-white/92 ring-1 ring-white/12",
     link: "text-amber-100 hover:text-white",
@@ -56,21 +56,21 @@ export function AuthShowcase({
   supportItems,
   audienceItems,
   quickLinks,
-  supportTitle = "เว็บนี้ช่วยอะไรได้บ้าง",
-  quickLinksTitle = "เริ่มต้นใช้งาน",
+  supportTitle = "ทำอะไรได้บ้าง",
+  quickLinksTitle = "ทำไมถึงควรใช้",
   tone = "emerald",
 }: AuthShowcaseProps) {
   const styles = toneClasses[tone];
 
   return (
     <section
-      className={`page-section-animate relative overflow-hidden rounded-[2.75rem] border border-white/18 px-6 py-7 shadow-[0_34px_110px_-58px_rgba(15,23,42,0.68)] sm:px-8 sm:py-9 lg:min-h-[41rem] ${styles.panel}`}
+      className={`page-section-animate relative overflow-hidden rounded-[2.5rem] border border-white/18 px-6 py-7 shadow-[0_34px_110px_-58px_rgba(15,23,42,0.68)] sm:px-8 sm:py-8 ${styles.panel}`}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.2),transparent_24%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.18),transparent_24%)]" />
       <div className="absolute right-6 top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl sm:h-32 sm:w-32" />
       <div className="absolute bottom-4 left-4 h-24 w-24 rounded-full bg-emerald-300/10 blur-2xl sm:h-32 sm:w-32" />
 
-      <div className="relative flex h-full flex-col justify-between gap-8">
+      <div className="relative flex h-full flex-col gap-7">
         <div className="space-y-5">
           <div
             className={`inline-flex rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.32em] ${styles.pill}`}
@@ -79,10 +79,10 @@ export function AuthShowcase({
           </div>
 
           <div className="space-y-4">
-            <h1 className="max-w-3xl text-[2.7rem] font-black tracking-tight text-white sm:text-[3.2rem] lg:text-[4.4rem]">
+            <h1 className="max-w-3xl text-[2.6rem] font-black tracking-tight text-white sm:text-[3.1rem] lg:text-[4rem]">
               {title}
             </h1>
-            <p className="max-w-2xl text-base leading-8 text-white/82 sm:text-lg">
+            <p className="max-w-2xl text-base leading-8 text-white/84 sm:text-lg">
               {description}
             </p>
           </div>
@@ -100,7 +100,7 @@ export function AuthShowcase({
         </div>
 
         <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-          <div className={`rounded-[2rem] p-5 sm:p-6 ${styles.card}`}>
+          <div className={`rounded-[1.9rem] p-5 sm:p-6 ${styles.card}`}>
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-white/65">
               {supportTitle}
             </p>
@@ -116,16 +116,22 @@ export function AuthShowcase({
             </div>
           </div>
 
-          <div className={`rounded-[2rem] p-5 sm:p-6 ${styles.card}`}>
+          <div className={`rounded-[1.9rem] p-5 sm:p-6 ${styles.card}`}>
             <p className="text-sm font-bold uppercase tracking-[0.24em] text-white/65">
               {quickLinksTitle}
             </p>
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-3 text-sm leading-7 text-white/88">
+              <p>ใช้งานง่าย ไม่ต้องจำหลายหน้า เปิดแล้วเริ่มตรวจสุขภาพได้จากจุดเดียว</p>
+              <p>เก็บข้อมูลย้อนหลังไว้ครบ ช่วยให้ดูอาการและยาที่ใช้อยู่ได้เร็วขึ้น</p>
+              <p>มีทั้ง AI ช่วยสรุป และส่งต่อข้อมูลให้คุณหมอดูได้ทันทีเมื่อจำเป็น</p>
+            </div>
+
+            <div className="mt-5 space-y-3">
               {quickLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`block rounded-[1.3rem] border border-white/14 bg-white/12 px-4 py-3 text-sm font-bold transition hover:bg-white/18 ${styles.link}`}
+                  className={`block rounded-[1.2rem] border border-white/14 bg-white/12 px-4 py-3 text-sm font-bold transition hover:bg-white/18 ${styles.link}`}
                 >
                   {link.label}
                 </Link>

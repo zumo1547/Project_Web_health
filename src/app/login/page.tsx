@@ -32,19 +32,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_28%),linear-gradient(180deg,#f8fffc_0%,#eef8f2_54%,#f7efe1_100%)]">
       <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(360px,0.86fr)] lg:items-center">
+        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.82fr)] lg:items-center">
           <AuthShowcase
             eyebrow="แอปตรวจสุขภาพผู้สูงอายุ"
             title="เข้าสู่ระบบผู้สูงอายุ"
-            description="ใช้ตรวจความดัน สแกนยา เก็บข้อมูลสุขภาพย้อนหลัง และขอคำแนะนำจาก AI ได้จากหน้าเดียว ออกแบบให้ใช้งานง่ายทั้งบนมือถือและคอมพิวเตอร์"
+            description="ดูแลสุขภาพได้จากหน้าเดียว ทั้งตรวจความดัน สแกนยา เก็บข้อมูลย้อนหลัง และขอคำแนะนำจาก AI หรือคุณหมอ โดยออกแบบให้ใช้ง่ายบนมือถือและคอมพิวเตอร์"
             supportItems={[
-              "สแกนรูปยาและรูปค่าความดันเพื่อให้ระบบช่วยอ่านและสรุปข้อมูลเบื้องต้น",
-              "เก็บประวัติสุขภาพ รายการยา และข้อมูลสำคัญไว้ดูย้อนหลังได้ตลอดเวลา",
-              "ขอคำแนะนำจาก AI หรือส่งข้อมูลให้คุณหมอดูต่อได้ทันทีเมื่อมีอาการผิดปกติ",
+              "สแกนยาและค่าความดันจากรูป เพื่อให้ระบบช่วยอ่านและสรุปข้อมูลเบื้องต้นได้รวดเร็ว",
+              "เก็บประวัติสุขภาพและรายการยาที่ใช้ไว้ในที่เดียว เปิดดูย้อนหลังเมื่อไรก็ได้",
+              "ส่งข้อมูลต่อให้คุณหมอหรือถาม AI ได้ทันที เมื่ออยากขอคำแนะนำเพิ่มเติม",
             ]}
             audienceItems={["ผู้สูงอายุ", "ครอบครัว", "ผู้ดูแลสุขภาพ"]}
             quickLinks={[{ href: "/register", label: "ยังไม่มีบัญชี? สมัครสมาชิก" }]}
-            quickLinksTitle="เริ่มต้นสำหรับผู้ใช้ใหม่"
             tone="sky"
           />
 
@@ -55,7 +54,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               accent="user"
               socialProviders={socialProviders}
               title="เข้าสู่แอปผู้สูงอายุ"
-              description="เข้าสู่ระบบด้วยอีเมลเดิม หรือใช้ Google / Facebook เพื่อเริ่มใช้งานได้อย่างรวดเร็ว"
+              description="เลือกวิธีเข้าสู่ระบบที่สะดวกที่สุด แล้วเริ่มบันทึกข้อมูลสุขภาพได้ทันที"
             />
           </div>
         </div>
