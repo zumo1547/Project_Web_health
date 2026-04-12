@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  SocialAuthButtons,
+  type SocialProvider,
+} from "@/components/forms/social-auth-buttons";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +24,7 @@ type RegisterFormProps = {
   description?: string;
   submitLabel?: string;
   className?: string;
+  socialProviders?: SocialProvider[];
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -38,6 +43,7 @@ export function RegisterForm({
   description = "สมัครบัญชีผู้สูงอายุเพื่อเข้าใช้งานระบบได้ทันที",
   submitLabel = "สร้างบัญชี",
   className = "",
+  socialProviders = [],
 }: RegisterFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -69,7 +75,9 @@ export function RegisterForm({
     const result = await response.json();
 
     if (!response.ok) {
-      setError(typeof result.error === "string" ? result.error : "สมัครสมาชิกไม่สำเร็จ");
+      setError(
+        typeof result.error === "string" ? result.error : "สมัครสมาชิกไม่สำเร็จ",
+      );
       return;
     }
 
@@ -98,14 +106,33 @@ export function RegisterForm({
 
   return (
     <Card
-      className={`mx-auto max-w-xl border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,253,244,0.97)_100%)] ${className}`}
+      className={`mx-auto w-full max-w-[36rem] rounded-[2.4rem] border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,253,244,0.97)_100%)] ${className}`}
     >
       <div className="space-y-3">
-        <CardTitle className="text-[1.9rem]">{title}</CardTitle>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-emerald-700">
+            Create Account
+          </p>
+          <span className="rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+            เริ่มใช้งานได้ในไม่กี่ขั้นตอน
+          </span>
+        </div>
+        <CardTitle className="text-[1.9rem] sm:text-[2.15rem]">{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </div>
 
-      <div className="mt-6 rounded-[1.6rem] border border-white/70 bg-white/80 p-5">
+      {socialProviders.length > 0 ? (
+        <div className="mt-6">
+          <SocialAuthButtons
+            providers={socialProviders}
+            callbackUrl={callbackUrl}
+            title="สมัครเร็วด้วย Google หรือ Facebook"
+            description="เหมาะกับผู้สูงอายุหรือครอบครัวที่อยากเริ่มใช้งานทันที หลังเข้าสู่ระบบครั้งแรก ระบบจะพาไปกรอกข้อมูลพื้นฐานต่อให้ครบ"
+          />
+        </div>
+      ) : null}
+
+      <div className="mt-6 rounded-[1.7rem] border border-white/70 bg-white/80 p-5 sm:p-6">
         <p className="text-base font-bold text-slate-950">ข้อมูลที่ต้องใช้</p>
         <p className="mt-2 text-sm leading-7 text-slate-600">
           ใช้เพียงชื่อที่ต้องการแสดง อีเมล และรหัสผ่าน หลังสมัครเสร็จระบบจะพาเข้าสู่หน้าผู้สูงอายุให้อัตโนมัติ

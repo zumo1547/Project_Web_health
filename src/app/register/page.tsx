@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
+import { AuthShowcase } from "@/components/auth/auth-showcase";
 import { RegisterForm } from "@/components/forms/register-form";
 import { getDefaultPortalPath } from "@/lib/permissions";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function RegisterPage() {
@@ -15,45 +15,47 @@ export default async function RegisterPage() {
     redirect(getDefaultPortalPath(session.user.role));
   }
 
+  const socialProviders = [
+    process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET ? "google" : null,
+    process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET
+      ? "facebook"
+      : null,
+  ].filter(Boolean) as ("google" | "facebook")[];
+
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(34,197,94,0.16),transparent_24%),linear-gradient(180deg,#fffef8_0%,#f2f7ef_100%)]">
-      <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
-        <section className="space-y-6">
-          <p className="text-sm font-bold uppercase tracking-[0.28em] text-emerald-700">
-            สมัครใช้งานแอป
-          </p>
-          <h1 className="max-w-3xl text-[2.7rem] font-black tracking-tight text-slate-950 md:text-[4.1rem]">
-            สมัครแอปตรวจสุขภาพผู้สูงอายุ
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-slate-600">
-            สมัครได้เฉพาะผู้สูงอายุทั่วไปเท่านั้น ไม่ต้องเลือกประเภทบัญชีให้สับสน สมัครเสร็จแล้วระบบจะพาเข้าสู่หน้าแอปของคุณทันที
-          </p>
+    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(14,165,233,0.14),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.14),transparent_28%),linear-gradient(180deg,#fcfffd_0%,#eff8f3_58%,#f8efe2_100%)]">
+      <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.92fr)] lg:items-center">
+          <AuthShowcase
+            eyebrow="สมัครใช้งานแอป"
+            title="สร้างบัญชีผู้สูงอายุ"
+            description="สมัครได้ทั้งจากอีเมลหรือบัญชี Google / Facebook แล้วค่อยกรอกข้อมูลพื้นฐานต่อให้ครบ เพื่อเริ่มใช้งานระบบติดตามสุขภาพได้ทันที"
+            supportItems={[
+              "ใช้ตรวจยา บันทึกความดัน และเก็บข้อมูลสุขภาพประจำวันในที่เดียว",
+              "มีแฟ้มสุขภาพย้อนหลังให้กลับมาดูประวัติยา ค่าความดัน และคำแนะนำได้ง่าย",
+              "เมื่อต้องการความช่วยเหลือ สามารถถาม AI หรือส่งข้อมูลให้คุณหมอดูต่อได้ทันที",
+            ]}
+            audienceItems={["ผู้สูงอายุทั่วไป", "ครอบครัวที่ช่วยสมัคร", "ใช้งานง่ายบนมือถือ"]}
+            quickLinks={[
+              { href: "/login", label: "มีบัญชีอยู่แล้ว เข้าสู่ระบบ" },
+              { href: "/doctor-login", label: "เข้าสู่ระบบคุณหมอ" },
+              { href: "/admin-login", label: "เข้าสู่ระบบแอดมิน" },
+            ]}
+            tone="emerald"
+          />
 
-          <div className="rounded-[2rem] border border-white/80 bg-white/90 p-6 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.45)]">
-            <p className="text-base font-bold text-slate-950">
-              หลังสมัครเสร็จทำอะไรได้บ้าง
-            </p>
-            <div className="mt-4 space-y-2 text-base leading-8 text-slate-700">
-              <p>1. เริ่มตรวจความดันและสแกนยาได้ทันที</p>
-              <p>2. ดูแฟ้มสุขภาพย้อนหลังและสถิติของตัวเอง</p>
-              <p>3. ถาม AI หรือส่งข้อความหาคุณหมอเพื่อขอคำแนะนำได้</p>
-            </div>
-            <div className="mt-5 text-sm">
-              <Link href="/login" className="font-bold text-emerald-700">
-                มีบัญชีอยู่แล้ว? เข้าสู่แอปผู้สูงอายุ
-              </Link>
-            </div>
+          <div className="page-section-animate" data-delay="1">
+            <RegisterForm
+              defaultRole="ELDERLY"
+              showRoleSelect={false}
+              submitLabel="สมัครและเริ่มใช้งาน"
+              callbackUrl="/elderly-portal"
+              title="สร้างบัญชีผู้สูงอายุ"
+              description="กรอกข้อมูลพื้นฐานเพื่อเริ่มใช้งานแอปตรวจสุขภาพส่วนตัว"
+              socialProviders={socialProviders}
+            />
           </div>
-        </section>
-
-        <RegisterForm
-          defaultRole="ELDERLY"
-          showRoleSelect={false}
-          submitLabel="สมัครและเริ่มใช้งาน"
-          callbackUrl="/elderly-portal"
-          title="สร้างบัญชีผู้สูงอายุ"
-          description="กรอกข้อมูลพื้นฐานเพื่อเริ่มใช้งานแอปตรวจสุขภาพส่วนตัว"
-        />
+        </div>
       </div>
     </div>
   );
