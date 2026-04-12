@@ -46,21 +46,21 @@ const accentStyles: Record<
 > = {
   user: {
     card:
-      "border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,253,244,0.97)_100%)]",
+      "border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,253,244,0.96)_100%)]",
     button: "bg-emerald-700 hover:bg-emerald-800 focus-visible:outline-emerald-700",
     hint: "text-emerald-700",
     socialTone: "emerald",
   },
   doctor: {
     card:
-      "border-cyan-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,249,255,0.97)_100%)]",
+      "border-cyan-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,249,255,0.96)_100%)]",
     button: "bg-slate-950 hover:bg-slate-800 focus-visible:outline-slate-900",
     hint: "text-cyan-700",
     socialTone: "sky",
   },
   admin: {
     card:
-      "border-amber-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,251,235,0.97)_100%)]",
+      "border-amber-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,251,235,0.96)_100%)]",
     button: "bg-amber-600 hover:bg-amber-700 focus-visible:outline-amber-600",
     hint: "text-amber-700",
     socialTone: "emerald",
@@ -234,38 +234,26 @@ export function LoginForm({
 
   return (
     <Card
-      className={`mx-auto w-full max-w-[32rem] rounded-[2.2rem] ${styles.card} ${className}`}
+      className={`mx-auto w-full max-w-[31rem] rounded-[2.15rem] ${styles.card} p-5 sm:p-6 lg:max-w-[30rem] xl:max-w-[31rem] ${className}`}
     >
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className={`text-sm font-bold uppercase tracking-[0.24em] ${styles.hint}`}>
             Portal Login
           </p>
-          <span className="rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs font-bold uppercase tracking-[0.22em] text-slate-500">
+          <span className="rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
             ใช้งานได้ทั้งมือถือและคอม
           </span>
         </div>
 
-        <div className="space-y-3">
-          <CardTitle className="text-[1.9rem] sm:text-[2.1rem]">{title}</CardTitle>
+        <div className="space-y-2">
+          <CardTitle className="text-[1.85rem] sm:text-[2.05rem]">{title}</CardTitle>
           <CardDescription className="max-w-xl">{description}</CardDescription>
         </div>
       </div>
 
-      {showSocialLogin ? (
-        <div className="mt-5">
-          <SocialAuthButtons
-            providers={socialProviders}
-            callbackUrl={defaultCallbackUrl}
-            title="เริ่มใช้งานด้วย Google หรือ Facebook"
-            description="เหมาะสำหรับผู้ใช้ใหม่ กดครั้งเดียวแล้วค่อยกรอกข้อมูลพื้นฐานต่อได้เลย"
-            tone={styles.socialTone}
-          />
-        </div>
-      ) : null}
-
       {rememberedLogins.length > 0 ? (
-        <div className="mt-5 rounded-[1.55rem] border border-white/80 bg-white/80 p-5">
+        <div className="mt-5 rounded-[1.5rem] border border-white/80 bg-white/82 p-4 sm:p-5">
           <p className="text-base font-bold text-slate-950">บัญชีที่ใช้บ่อยในเครื่องนี้</p>
           <p className="mt-1 text-sm leading-7 text-slate-600">
             กดเลือกบัญชีก่อน แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบได้ทันที
@@ -277,12 +265,10 @@ export function LoginForm({
                 key={`${item.portal}-${item.email}`}
                 type="button"
                 onClick={() => handlePickRememberedLogin(item.email)}
-                className="rounded-[1.25rem] border border-slate-200 bg-white px-4 py-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+                className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
               >
                 <p className="text-base font-bold text-slate-950">{item.email}</p>
-                <p className="mt-1 text-sm text-slate-500">
-                  ใช้งานแล้ว {item.usageCount} ครั้ง
-                </p>
+                <p className="mt-1 text-sm text-slate-500">ใช้บ่อยแล้ว {item.usageCount} ครั้ง</p>
                 <p className="mt-1 text-xs text-slate-400">
                   ใช้ล่าสุด {formatDate(item.lastUsedAt)}
                 </p>
@@ -292,7 +278,19 @@ export function LoginForm({
         </div>
       ) : null}
 
-      <div className="mt-5 rounded-[1.55rem] border border-white/80 bg-white/80 p-5 sm:p-6">
+      {showSocialLogin ? (
+        <div className="mt-5">
+          <SocialAuthButtons
+            providers={socialProviders}
+            callbackUrl={defaultCallbackUrl}
+            title="เริ่มใช้งานด้วย Google หรือ Facebook"
+            description="เหมาะกับการเข้าสู่ระบบอย่างรวดเร็ว กดครั้งเดียวแล้วเริ่มใช้งานต่อได้เลย"
+            tone={styles.socialTone}
+          />
+        </div>
+      ) : null}
+
+      <div className="mt-5 rounded-[1.5rem] border border-white/80 bg-white/82 p-4 sm:p-5">
         <div className="space-y-2">
           <p className="text-base font-bold text-slate-950">เข้าสู่ระบบด้วยอีเมล</p>
           <p className="text-sm leading-7 text-slate-600">
@@ -300,7 +298,7 @@ export function LoginForm({
           </p>
         </div>
 
-        <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
+        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
           <label className="block space-y-2">
             <span className="text-sm font-bold text-slate-700">อีเมล</span>
             <Input
@@ -337,23 +335,25 @@ export function LoginForm({
           <Button type="submit" fullWidth disabled={isPending} className={styles.button}>
             {isPending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </Button>
+
+          {showRegisterPrompt ? (
+            <div className="flex flex-col gap-2 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-bold text-slate-900">ยังไม่มีบัญชีใช่ไหม?</p>
+                <p className="mt-1 leading-6 text-slate-600">
+                  สมัครสมาชิกก่อน แล้วกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
+                </p>
+              </div>
+              <Link
+                href="/register"
+                className="inline-flex shrink-0 rounded-[1rem] border border-emerald-200 bg-white px-4 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
+              >
+                สมัครสมาชิก
+              </Link>
+            </div>
+          ) : null}
         </form>
       </div>
-
-      {showRegisterPrompt ? (
-        <div className="mt-5 rounded-[1.55rem] border border-emerald-100 bg-white/80 p-5">
-          <p className="text-base font-bold text-slate-950">ยังไม่มีบัญชีใช่ไหม?</p>
-          <p className="mt-1 text-sm leading-7 text-slate-600">
-            สมัครสมาชิกก่อน แล้วกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
-          </p>
-          <Link
-            href="/register"
-            className="mt-4 inline-flex rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
-          >
-            สมัครสมาชิก
-          </Link>
-        </div>
-      ) : null}
     </Card>
   );
 }

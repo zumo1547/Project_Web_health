@@ -30,24 +30,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   ].filter(Boolean) as ("google" | "facebook")[];
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_28%),linear-gradient(180deg,#f8fffc_0%,#eef8f2_54%,#f7efe1_100%)]">
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.82fr)] lg:items-center">
+    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.10),transparent_30%),linear-gradient(180deg,#fbfffd_0%,#eff8f3_56%,#f8efe3_100%)]">
+      <div className="mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(430px,0.92fr)] lg:items-center xl:gap-10">
           <AuthShowcase
             eyebrow="แอปตรวจสุขภาพผู้สูงอายุ"
             title="เข้าสู่ระบบผู้สูงอายุ"
-            description="ดูแลสุขภาพได้จากหน้าเดียว ทั้งตรวจความดัน สแกนยา เก็บข้อมูลย้อนหลัง และขอคำแนะนำจาก AI หรือคุณหมอ โดยออกแบบให้ใช้ง่ายบนมือถือและคอมพิวเตอร์"
+            description="ดูแลเรื่องยา ความดัน และประวัติสุขภาพได้จากหน้าเดียว พร้อมขอคำแนะนำจาก AI หรือส่งต่อข้อมูลให้คุณหมอดูได้ทันที ใช้งานง่าย อ่านสบาย และเหมาะกับทั้งคอมและมือถือ"
             supportItems={[
-              "สแกนยาและค่าความดันจากรูป เพื่อให้ระบบช่วยอ่านและสรุปข้อมูลเบื้องต้นได้รวดเร็ว",
-              "เก็บประวัติสุขภาพและรายการยาที่ใช้ไว้ในที่เดียว เปิดดูย้อนหลังเมื่อไรก็ได้",
-              "ส่งข้อมูลต่อให้คุณหมอหรือถาม AI ได้ทันที เมื่ออยากขอคำแนะนำเพิ่มเติม",
+              "สแกนรูปยาและค่าความดันจากรูป เพื่อช่วยอ่านและสรุปข้อมูลเบื้องต้นได้รวดเร็ว",
+              "เก็บประวัติสุขภาพ ยาที่ใช้ และบันทึกสำคัญไว้ดูย้อนหลังได้ในที่เดียว",
+              "คุยกับ AI หรือส่งอาการให้คุณหมอดูต่อได้ทันที เมื่อต้องการคำแนะนำเพิ่มเติม",
             ]}
             audienceItems={["ผู้สูงอายุ", "ครอบครัว", "ผู้ดูแลสุขภาพ"]}
             quickLinks={[{ href: "/register", label: "ยังไม่มีบัญชี? สมัครสมาชิก" }]}
             tone="sky"
           />
 
-          <div className="page-section-animate" data-delay="1">
+          <div className="page-section-animate lg:justify-self-end" data-delay="1">
             <LoginForm
               defaultCallbackUrl={callbackUrl ?? "/elderly-portal"}
               portal="USER"
