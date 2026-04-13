@@ -73,6 +73,7 @@ model User {
 
 model ElderlyProfile {
   id                String              @id @default(cuid())
+  titlePrefix       String?
   firstName         String
   lastName          String
   nationalId        String?             @unique
