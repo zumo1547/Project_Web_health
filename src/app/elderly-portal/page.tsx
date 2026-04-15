@@ -363,13 +363,6 @@ export default async function ElderlyPortalPage() {
       </section>
 
       <section id="appointments" className="mt-6 grid gap-5">
-        <Card className="border-purple-100 bg-[linear-gradient(135deg,rgba(250,245,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
-          <CardTitle>📅 การนัดหมาย</CardTitle>
-          <CardDescription className="mt-2">
-            ดูและจัดการการนัดหมายกับคุณหมอของคุณ
-          </CardDescription>
-        </Card>
-
         <ElderlyAppointmentPanel elderlyId={elderly.id} />
       </section>
 
