@@ -136,6 +136,9 @@ export default async function ElderlyPortalPage() {
   const latestDoctorMessage = [...elderly.chatMessages]
     .reverse()
     .find((message) => message.senderRole !== Role.ELDERLY);
+  const doctorMessageCount = elderly.chatMessages.filter(
+    (message) => message.senderRole === Role.DOCTOR
+  ).length;
   const latestAiHealthMessage = [...elderly.aiHealthMessages]
     .reverse()
     .find((message) => message.role === "ASSISTANT");
@@ -441,7 +444,7 @@ export default async function ElderlyPortalPage() {
           },
           {
             id: "doctor-chat",
-            label: "ติดต่อหมอ",
+            label: `ติดต่อหมอ${doctorMessageCount > 0 ? ` (${doctorMessageCount})` : ""}`,
             description: "ส่งอาการหรือผลตรวจให้คุณหมอดู",
             icon: "doctor",
             content: (
