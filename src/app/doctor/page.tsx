@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { AppShell } from "@/components/dashboard/app-shell";
+import { DoctorAppointmentList } from "@/components/dashboard/doctor-appointment-list";
 import { DoctorCaseActionButton } from "@/components/dashboard/doctor-case-action-button";
 import { QuickActionCard } from "@/components/dashboard/quick-action-card";
 import { SummaryCard } from "@/components/dashboard/summary-card";
@@ -162,6 +163,7 @@ export default async function DoctorPage() {
       user={session.user}
       navigation={[
         { href: "#overview", label: "ภาพรวมวันนี้", eyebrow: "Today" },
+        { href: "#appointments", label: "การนัดหมาย", eyebrow: "Appointments" },
         { href: "#queue", label: "คิวรอรับเคส", eyebrow: "Queue" },
         { href: "#active", label: "เคสที่กำลังดูแล", eyebrow: "Active" },
       ]}
@@ -289,6 +291,17 @@ export default async function DoctorPage() {
           description="ระบบยังรองรับให้คุณหมอรับหลายเคสพร้อมกันและปิดแยกแต่ละเคสได้"
           tone="doctor"
         />
+      </section>
+
+      <section id="appointments" className="mt-6 grid gap-5">
+        <Card className="border-purple-100 bg-[linear-gradient(135deg,rgba(250,245,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>🔔 การนัดหมายของคุณหมอ</CardTitle>
+          <CardDescription className="mt-2">
+            ดูการนัดหมายที่กำลังจะมาถึง วันนี้มีการนัดหรือไม่ และสามารถจัดการการนัดหมายได้
+          </CardDescription>
+        </Card>
+
+        <DoctorAppointmentList />
       </section>
 
       <section id="queue" className="mt-6 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">

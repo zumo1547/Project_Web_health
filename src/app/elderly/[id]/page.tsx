@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { AppShell } from "@/components/dashboard/app-shell";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { ChatPanel } from "@/components/forms/chat-panel";
+import { DoctorAppointmentForm } from "@/components/forms/doctor-appointment-form";
 import { DoctorHospitalSharePanel } from "@/components/forms/doctor-hospital-share-panel";
 import { ElderlyProfileSettingsForm } from "@/components/forms/elderly-profile-settings-form";
 import { RecordDeleteButton } from "@/components/forms/record-delete-button";
@@ -432,6 +433,15 @@ export default async function ElderlyDetailPage({
         </div>
 
         <div className="space-y-6">
+          {canShareNearbyHospitals ? (
+            <section id="appointment">
+              <DoctorAppointmentForm
+                elderlyId={elderly.id}
+                elderlyName={`${elderly.firstName} ${elderly.lastName}`.trim()}
+              />
+            </section>
+          ) : null}
+
           {canShareNearbyHospitals ? (
             <section id="hospital-guidance">
               <DoctorHospitalSharePanel

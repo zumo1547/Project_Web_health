@@ -1,11 +1,14 @@
 import { auth } from "@/auth";
 import { AppShell } from "@/components/dashboard/app-shell";
+import { DoctorAppointmentList } from "@/components/dashboard/doctor-appointment-list";
+import { ElderlyAppointmentHistory } from "@/components/dashboard/elderly-appointment-history";
 import { SummaryCard } from "@/components/dashboard/summary-card";
 import { AiHealthChatPanel } from "@/components/forms/ai-health-chat-panel";
 import { AiScanForm } from "@/components/forms/ai-scan-form";
 import { BloodPressureForm } from "@/components/forms/blood-pressure-form";
 import { CaseRequestPanel } from "@/components/forms/case-request-panel";
 import { ChatPanel } from "@/components/forms/chat-panel";
+import { ElderlyAppointmentPanel } from "@/components/forms/elderly-appointment-panel";
 import { MedicineUploadForm } from "@/components/forms/medicine-upload-form";
 import { NearbyHospitalsPanel } from "@/components/forms/nearby-hospitals-panel";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
@@ -154,6 +157,7 @@ export default async function ElderlyPortalPage() {
         { href: "#help", label: "ขอความช่วยเหลือ", eyebrow: "Help" },
         { href: "#medicine", label: "เรื่องยา", eyebrow: "Medicine" },
         { href: "#pressure", label: "ความดัน", eyebrow: "Pressure" },
+        { href: "#appointments", label: "การนัดหมาย", eyebrow: "Appointments" },
         { href: "#history", label: "ย้อนหลัง", eyebrow: "History" },
         { href: "#map", label: "แผนที่", eyebrow: "Map" },
       ]}
@@ -356,6 +360,17 @@ export default async function ElderlyPortalPage() {
           <AiScanForm elderlyId={elderly.id} showMedicine={false} />
           <BloodPressureForm elderlyId={elderly.id} />
         </div>
+      </section>
+
+      <section id="appointments" className="mt-6 grid gap-5">
+        <Card className="border-purple-100 bg-[linear-gradient(135deg,rgba(250,245,255,0.98)_0%,rgba(255,255,255,0.96)_100%)]">
+          <CardTitle>📅 การนัดหมาย</CardTitle>
+          <CardDescription className="mt-2">
+            ดูและจัดการการนัดหมายกับคุณหมอของคุณ
+          </CardDescription>
+        </Card>
+
+        <ElderlyAppointmentPanel elderlyId={elderly.id} />
       </section>
 
       <section id="history" className="mt-6 grid gap-5 xl:grid-cols-2 xl:items-start">
