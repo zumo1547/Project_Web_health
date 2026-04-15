@@ -22,7 +22,7 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { data: appointments = [], isLoading } = useQuery<any[]>({
+  const { data: appointments = [], isLoading, refetch } = useQuery<any[]>({
     queryKey: ["appointments", elderlyId],
     queryFn: async () => {
       const res = await fetch("/api/appointments?type=upcoming");
@@ -31,6 +31,18 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
   });
 
   const reschedule = appointments.find((a) => a.id === selectedAppointment);
+
+  const sendChatMessage = async (message: string) => {
+    try {
+      await fetch(`/api/elderly/${elderlyId}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: message }),
+      });
+    } catch (err) {
+      console.error("Failed to send chat message:", err);
+    }
+  };
 
   const rescheduleMutation = useMutation({
     mutationFn: async () => {
@@ -52,13 +64,25 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Send message to chat
+      const aptData = appointments.find((a) => a.id === selectedAppointment);
+      const reasonText = {
+        ELDERLY_REQUEST: "ตามคำขอของผู้สูงอายุ",
+        OTHER: reasonDetail || "มีการเปลี่ยนแปลง",
+      }[rescheduleReason] || "มีการเปลี่ยนแปลง";
+
+      await sendChatMessage(
+        `🔄 ขอเลื่อนวันนัดจาก ${formatDate(new Date(aptData?.appointmentDate))} เป็น ${formatDate(new Date(newDate))}\n\n📝 เหตุผล: ${reasonText}${reasonDetail ? `\n💬 ${reasonDetail}` : ""}`
+      );
+
       setSuccess("✅ เลื่อนวันนัดสำเร็จแล้ว");
       setShowRescheduleForm(false);
       setNewDate("");
       setRescheduleReason("");
       setReasonDetail("");
       setError("");
+      refetch();
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (err: any) => {
@@ -84,10 +108,17 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Send message to chat
+      const aptData = appointments.find((a) => a.id === selectedAppointment);
+      await sendChatMessage(
+        `❌ ขอยกเลิกการนัดวันที่ ${formatDate(new Date(aptData?.appointmentDate))}\n\n👨‍⚕️ ${aptData?.doctor.name}`
+      );
+
       setSuccess("✅ ยกเลิกการนัดแล้ว");
       setSelectedAppointment(null);
       setError("");
+      refetch();
       setTimeout(() => setSuccess(""), 3000);
     },
     onError: (err: any) => {
