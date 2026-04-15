@@ -151,7 +151,12 @@ export function DoctorAppointmentList() {
             {upcoming.map((apt) => (
               <button
                 key={apt.id}
-                onClick={() => setSelectedAppointment(apt.id)}
+                onClick={() => {
+                  setSelectedAppointment(apt.id);
+                  setEditingAppointmentId(null); // Clear editing mode when selecting different appointment
+                  setEditDate("");
+                  setEditNotes("");
+                }}
                 className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
                   selectedAppointment === apt.id
                     ? "border-green-500 bg-green-50 shadow-md"
@@ -237,6 +242,10 @@ export function DoctorAppointmentList() {
                   >
                     ยกเลิก
                   </Button>
+                </div>
+
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  💡 หมายเหตุ: คลิกที่การนัดอื่นเพื่อแก้ไขการนัดนั้น
                 </div>
               </div>
             ) : (
