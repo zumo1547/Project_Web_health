@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState, useTransition } from "react";
+import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
 
 type UserRole = "ADMIN" | "DOCTOR" | "CAREGIVER" | "ELDERLY";
 
@@ -232,6 +232,8 @@ function areMessagesEqual(left: ChatMessageView[], right: ChatMessageView[]) {
   });
 }
 
+const REFRESH_INTERVAL = 2000; // 2 seconds for real-time updates
+
 export function ChatPanel({
   elderlyId,
   currentUserId,
@@ -247,46 +249,49 @@ export function ChatPanel({
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const [chatMessages, setChatMessages] = useState(messages);
+  const refreshMessagesRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
+  const refreshMessages = async () => {
+    try {
+      const response = await fetch(`/api/elderly/${elderlyId}/chat`, {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const result = (await readApiResponse(response)) as ApiChatMessage[];
+      if (!Array.isArray(result)) {
+        return;
+      }
+
+      const nextMessages = result.map(mapApiMessageToView);
+      setChatMessages((current) =>
+        areMessagesEqual(current, nextMessages) ? current : nextMessages,
+      );
+    } catch (fetchError) {
+      console.error("CHAT_REFRESH_ERROR", fetchError);
+    }
+  };
+
+  refreshMessagesRef.current = refreshMessages;
 
   useEffect(() => {
     setChatMessages(messages);
   }, [messages]);
 
   useEffect(() => {
-    let cancelled = false;
+    // Initial refresh
+    refreshMessages();
 
-    async function refreshMessages() {
-      try {
-        const response = await fetch(`/api/elderly/${elderlyId}/chat`, {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const result = (await readApiResponse(response)) as ApiChatMessage[];
-        if (cancelled || !Array.isArray(result)) {
-          return;
-        }
-
-        const nextMessages = result.map(mapApiMessageToView);
-        setChatMessages((current) =>
-          areMessagesEqual(current, nextMessages) ? current : nextMessages,
-        );
-      } catch (fetchError) {
-        console.error("CHAT_REFRESH_ERROR", fetchError);
-      }
-    }
-
-    void refreshMessages();
+    // Set up polling
     const timer = window.setInterval(() => {
-      void refreshMessages();
-    }, 4000);
+      refreshMessagesRef.current?.();
+    }, REFRESH_INTERVAL);
 
     return () => {
-      cancelled = true;
       window.clearInterval(timer);
     };
   }, [elderlyId]);
@@ -337,6 +342,12 @@ export function ChatPanel({
     }
 
     form.reset();
+    
+    // Refresh messages immediately after sending and after a short delay to ensure server has processed
+    setTimeout(() => {
+      refreshMessagesRef.current?.();
+    }, 300);
+
     startTransition(() => {
       router.refresh();
     });
