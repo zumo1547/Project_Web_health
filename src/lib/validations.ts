@@ -1,4 +1,4 @@
-import { AiScanType, Gender, Role } from "@/generated/prisma";
+import { AiScanType, Gender, Role, RescheduleReason } from "@/generated/prisma";
 import { z } from "zod";
 
 export const loginPortalSchema = z.enum(["USER", "DOCTOR", "ADMIN"]).default("USER");
@@ -77,6 +77,33 @@ export const elderlyUpdateSchema = elderlySchema
   .refine((data) => Object.keys(data).length > 0, {
     message: "กรุณาระบุข้อมูลที่ต้องการแก้ไขอย่างน้อย 1 รายการ",
   });
+
+// Appointment schemas
+export const createAppointmentSchema = z.object({
+  elderlyId: z.string().min(1, "กรุณาเลือกผู้สูงอายุ"),
+  appointmentDate: z.string().min(1, "กรุณาเลือกวันนัด").refine((value) => {
+    const date = new Date(value);
+    return date > new Date();
+  }, "วันนัดต้องเป็นวันในอนาคต"),
+  notes: optionalString,
+});
+
+export const rescheduleAppointmentSchema = z.object({
+  appointmentId: z.string().min(1, "ไม่พบการนัดหมาย"),
+  newDate: z.string().min(1, "กรุณาเลือกวันนัดใหม่").refine((value) => {
+    const date = new Date(value);
+    return date > new Date();
+  }, "วันนัดต้องเป็นวันในอนาคต"),
+  reason: z.nativeEnum(RescheduleReason, {
+    message: "กรุณาเลือกเหตุผลการเลื่อนวัน",
+  }),
+  reasonDetail: optionalString,
+});
+
+export const cancelAppointmentSchema = z.object({
+  appointmentId: z.string().min(1, "ไม่พบการนัดหมาย"),
+  cancellationReason: optionalString,
+});
 
 export const bloodPressureSchema = z.object({
   systolic: z.coerce.number().int().min(60).max(260),

@@ -49,6 +49,21 @@ enum AiHealthMessageRole {
   ASSISTANT
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum RescheduleReason {
+  DOCTOR_UNAVAILABLE
+  DOCTOR_EMERGENCY
+  ELDERLY_REQUEST
+  ADMIN_REQUEST
+  OTHER
+}
+
 model User {
   id                     String                @id @default(cuid())
   name                   String
@@ -69,6 +84,9 @@ model User {
   auditLogs              AuditLog[]
   accounts               Account[]
   sessions               Session[]
+  doctorAppointments     Appointment[]         @relation("DoctorAppointments")
+  rescheduledAppointments AppointmentReschedule[] @relation("AppointmentRescheduleBy")
+  doctorAppointmentHistory AppointmentHistory[] @relation("DoctorAppointmentHistory")
 }
 
 model ElderlyProfile {
@@ -105,6 +123,8 @@ model ElderlyProfile {
   caregivers       ElderlyCaregiver[]
   chatMessages     ChatMessage[]
   aiHealthMessages AiHealthMessage[]
+  appointments     Appointment[]         @relation("ElderlyAppointments")
+  appointmentHistory AppointmentHistory[] @relation("ElderlyAppointmentHistory")
 }
 
 model DoctorPatient {
@@ -212,6 +232,62 @@ model AiHealthMessage {
   createdAt DateTime            @default(now())
 
   elderly ElderlyProfile @relation(fields: [elderlyId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id                String            @id @default(cuid())
+  elderlyId         String
+  doctorId          String
+  appointmentDate   DateTime
+  notes             String?
+  status            AppointmentStatus @default(SCHEDULED)
+  reminderSentAt    DateTime?
+  appointmentCompletedAt DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  elderly           ElderlyProfile      @relation("ElderlyAppointments", fields: [elderlyId], references: [id], onDelete: Cascade)
+  doctor            User                @relation("DoctorAppointments", fields: [doctorId], references: [id], onDelete: Cascade)
+  rescheduleHistory AppointmentReschedule[]
+  appointmentHistory AppointmentHistory[]
+
+  @@index([elderlyId])
+  @@index([doctorId])
+  @@index([appointmentDate])
+}
+
+model AppointmentReschedule {
+  id                 String          @id @default(cuid())
+  appointmentId      String
+  originalDate       DateTime
+  newDate            DateTime
+  reason             RescheduleReason
+  reasonDetail       String?
+  rescheduledBy      String          // userId who rescheduled
+  rescheduledAt      DateTime        @default(now())
+  createdAt          DateTime        @default(now())
+
+  appointment        Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  rescheduledByUser  User            @relation("AppointmentRescheduleBy", fields: [rescheduledBy], references: [id], onDelete: Restrict)
+}
+
+model AppointmentHistory {
+  id                 String          @id @default(cuid())
+  appointmentId      String
+  elderlyId          String
+  doctorId           String
+  appointmentDate    DateTime
+  notes              String?
+  status             AppointmentStatus
+  completedAt        DateTime?
+  createdAt          DateTime        @default(now())
+
+  appointment        Appointment     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  elderly            ElderlyProfile  @relation("ElderlyAppointmentHistory", fields: [elderlyId], references: [id], onDelete: Cascade)
+  doctor             User            @relation("DoctorAppointmentHistory", fields: [doctorId], references: [id], onDelete: Restrict)
+
+  @@index([elderlyId])
+  @@index([doctorId])
 }
 
 /* NextAuth tables */
