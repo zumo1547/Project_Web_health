@@ -452,10 +452,11 @@ export default async function ElderlyPortalPage() {
                 description="หากต้องการให้คุณหมอช่วยดูผลตรวจหรืออาการเพิ่มเติม สามารถส่งข้อความได้จากหน้าต่างนี้ทันที"
                 emptyMessage="ยังไม่มีข้อความถึงคุณหมอ เริ่มพิมพ์อาการหรือสิ่งที่อยากให้ช่วยดูได้เลย"
                 placeholder="เช่น วันนี้มีอาการเวียนหัวหลังวัดความดัน / อยากให้ช่วยดูรูปยาที่เพิ่งอัปโหลด"
+                hasActiveDoctor={elderly.doctors.length > 0}
                 notice={
                   elderly.doctors.length
-                    ? `ตอนนี้มีคุณหมอดูแลอยู่: ${elderly.doctors.map((item) => item.doctor.name).join(", ")}`
-                    : "หากยังไม่มีคุณหมอรับเคส ข้อความล่าสุดของคุณจะถูกนำขึ้นคิวให้คุณหมอเห็นก่อนรับเคส"
+                    ? `✅ ตอนนี้มีคุณหมอดูแลอยู่: ${elderly.doctors.map((item) => item.doctor.name).join(", ")}`
+                    : "📧 ส่งคำขอให้คุณหมอรับเคส ด้านบนแล้วคุณหมอจะได้รับการแจ้งเตือน"
                 }
                 messages={elderly.chatMessages.map((message) => ({
                   id: message.id,

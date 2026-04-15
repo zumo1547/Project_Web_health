@@ -81,61 +81,68 @@ export async function POST(req: Request, context: RouteContext) {
       );
     }
 
-    const shouldQueueDoctor =
-      session.user.role === Role.ELDERLY &&
-      (await prisma.doctorPatient.count({
+    // ตรวจสอบว่ามีเคสหมอที่ active อยู่หรือไม่
+    const activeDoctorCase = await prisma.doctorPatient.count({
+      where: {
+        elderlyId: id,
+        status: DoctorCaseStatus.ACTIVE,
+      },
+    });
+
+    // ผู้สูงอายุต้องมีหมอรับเคสแล้ว จึงจะได้ส่งข้อความ
+    if (session.user.role === Role.ELDERLY && activeDoctorCase === 0) {
+      return Response.json(
+        { error: "กรุณาส่งคำขอให้คุณหมอรับเคสก่อน จึงจะสามารถแชทได้" },
+        { status: 403 },
+      );
+    }
+
+    // หมอต้องรับเคสนี้อยู่ จึงจะได้ส่งข้อความ
+    if (session.user.role === Role.DOCTOR) {
+      const isDoctorAssigned = await prisma.doctorPatient.findFirst({
         where: {
           elderlyId: id,
+          doctorId: session.user.id,
           status: DoctorCaseStatus.ACTIVE,
-        },
-      })) === 0;
-
-    const preview = toChatPreview(parsed.data.content);
-
-    const created = await prisma.$transaction(async (tx) => {
-      const message = await tx.chatMessage.create({
-        data: {
-          elderlyId: id,
-          senderId: session.user.id,
-          senderRole: session.user.role,
-          content: parsed.data.content,
-        },
-        include: {
-          sender: {
-            select: {
-              id: true,
-              name: true,
-              role: true,
-            },
-          },
         },
       });
 
-      if (shouldQueueDoctor) {
-        await tx.elderlyProfile.update({
-          where: {
-            id,
-          },
-          data: {
-            caseStatus: CaseStatus.WAITING_DOCTOR,
-            doctorRequestedAt: new Date(),
-            doctorRequestNote: preview,
-          },
-        });
+      if (!isDoctorAssigned) {
+        return Response.json(
+          { error: "คุณยังไม่ได้รับเคสนี้ หรือเคสนี้ปิดไปแล้ว" },
+          { status: 403 },
+        );
       }
+    }
 
-      return message;
+    const preview = toChatPreview(parsed.data.content);
+
+    const created = await prisma.chatMessage.create({
+      data: {
+        elderlyId: id,
+        senderId: session.user.id,
+        senderRole: session.user.role,
+        content: parsed.data.content,
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+          },
+        },
+      },
     });
 
     await writeAuditLog({
       userId: session.user.id,
-      action: shouldQueueDoctor ? "SEND_CHAT_AND_QUEUE_CASE" : "SEND_CHAT_MESSAGE",
+      action: "SEND_CHAT_MESSAGE",
       entityType: "ChatMessage",
       entityId: created.id,
       meta: {
         elderlyId: id,
         senderRole: session.user.role,
-        queuedForDoctor: shouldQueueDoctor,
       },
     });
 

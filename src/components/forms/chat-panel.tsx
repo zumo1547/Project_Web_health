@@ -29,6 +29,7 @@ type ChatPanelProps = {
   emptyMessage?: string;
   placeholder?: string;
   notice?: string;
+  hasActiveDoctor?: boolean;
 };
 
 type ApiChatMessage = {
@@ -240,6 +241,7 @@ export function ChatPanel({
   emptyMessage = "ยังไม่มีข้อความในเคสนี้ เริ่มส่งข้อความแรกได้เลย",
   placeholder = "เช่น วันนี้รู้สึกเวียนหัวหลังวัดความดัน / อยากให้ช่วยดูรูปยาที่เพิ่งอัปโหลด",
   notice,
+  hasActiveDoctor = false,
 }: ChatPanelProps) {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -478,27 +480,36 @@ export function ChatPanel({
         })}
       </div>
 
-      <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-        <label className="block space-y-2">
-          <span className="text-sm font-bold text-slate-700">พิมพ์ข้อความ</span>
-          <Textarea
-            name="content"
-            className="min-h-32"
-            placeholder={placeholder}
-            required
-          />
-        </label>
-
-        {error ? (
-          <p className="rounded-[1.3rem] bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
+      {!hasActiveDoctor ? (
+        <div className="mt-6 rounded-[1.6rem] border border-amber-100 bg-amber-50/70 p-5">
+          <p className="text-base font-bold text-slate-950">⚠️ ต้องขอหมอรับเคสก่อน</p>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            ในการแชทกับหมอ คุณต้องส่งคำขอให้หมอรับเคสก่อน เมื่อหมอรับเคสแล้ว คุณจึงจะสามารถแชทได้
           </p>
-        ) : null}
+        </div>
+      ) : (
+        <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+          <label className="block space-y-2">
+            <span className="text-sm font-bold text-slate-700">พิมพ์ข้อความ</span>
+            <Textarea
+              name="content"
+              className="min-h-32"
+              placeholder={placeholder}
+              required
+            />
+          </label>
 
-        <Button type="submit" disabled={isPending} fullWidth>
-          {isPending ? "กำลังส่งข้อความ..." : "ส่งข้อความ"}
-        </Button>
-      </form>
+          {error ? (
+            <p className="rounded-[1.3rem] bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {error}
+            </p>
+          ) : null}
+
+          <Button type="submit" disabled={isPending} fullWidth>
+            {isPending ? "กำลังส่งข้อความ..." : "ส่งข้อความ"}
+          </Button>
+        </form>
+      )}
     </Card>
   );
 }
