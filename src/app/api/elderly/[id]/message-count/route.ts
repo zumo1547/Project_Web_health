@@ -23,12 +23,18 @@ export async function GET(_request: Request, context: RouteContext) {
     await assertElderlyReadAccess(id);
 
     // ตรวจสอบว่าหมอรับเคสนี้อยู่หรือไม่
+    const whereCondition: any = {
+      elderlyId: id,
+      status: DoctorCaseStatus.ACTIVE,
+    };
+
+    // ถ้าเป็น DOCTOR ต้องตรวจสอบว่า doctor นี้เท่านั้น
+    if (session.user.role === Role.DOCTOR) {
+      whereCondition.doctorId = session.user.id;
+    }
+
     const doctorCase = await prisma.doctorPatient.findFirst({
-      where: {
-        elderlyId: id,
-        doctorId: session.user.role === Role.DOCTOR ? session.user.id : undefined,
-        status: DoctorCaseStatus.ACTIVE,
-      },
+      where: whereCondition,
       select: {
         createdAt: true,
       },
