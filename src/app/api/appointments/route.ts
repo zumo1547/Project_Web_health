@@ -37,6 +37,10 @@ export async function POST(req: NextRequest) {
       return await handleCancelAppointment(req, session);
     } else if (action === "complete") {
       return await handleCompleteAppointment(req, session);
+    } else if (action === "update") {
+      return await handleUpdateAppointment(req, session);
+    } else if (action === "delete") {
+      return await handleDeleteAppointment(req, session);
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -344,4 +348,85 @@ async function handleCompleteAppointment(req: NextRequest, session: any) {
 
   const completed = await completeAppointment(appointmentId);
   return NextResponse.json(completed);
+}
+
+async function handleUpdateAppointment(req: NextRequest, session: any) {
+  if (session.user.role !== Role.DOCTOR && session.user.role !== Role.ADMIN) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const { appointmentId, appointmentDate, notes } = body;
+
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+  });
+
+  if (!appointment) {
+    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+  }
+
+  if (
+    session.user.role === Role.DOCTOR &&
+    appointment.doctorId !== session.user.id
+  ) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const updated = await prisma.appointment.update({
+    where: { id: appointmentId },
+    data: {
+      appointmentDate: appointmentDate ? new Date(appointmentDate) : undefined,
+      notes: notes !== undefined ? notes : undefined,
+      updatedAt: new Date(),
+    },
+    include: {
+      elderly: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+        },
+      },
+      doctor: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return NextResponse.json(updated);
+}
+
+async function handleDeleteAppointment(req: NextRequest, session: any) {
+  if (session.user.role !== Role.DOCTOR && session.user.role !== Role.ADMIN) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await req.json();
+  const { appointmentId } = body;
+
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: appointmentId },
+  });
+
+  if (!appointment) {
+    return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+  }
+
+  if (
+    session.user.role === Role.DOCTOR &&
+    appointment.doctorId !== session.user.id
+  ) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  await prisma.appointment.delete({
+    where: { id: appointmentId },
+  });
+
+  return NextResponse.json({ success: true });
 }
