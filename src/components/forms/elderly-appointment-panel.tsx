@@ -22,7 +22,7 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const { data: appointments = [], isLoading } = useQuery({
+  const { data: appointments = [], isLoading } = useQuery<any[]>({
     queryKey: ["appointments", elderlyId],
     queryFn: async () => {
       const res = await fetch("/api/appointments?type=upcoming");
@@ -219,7 +219,7 @@ export function ElderlyAppointmentPanel({ elderlyId }: ElderlyAppointmentPanelPr
                 </Button>
                 <Button
                   onClick={() => setShowRescheduleForm(false)}
-                  variant="outline"
+                  variant="secondary"
                   className="flex-1"
                 >
                   ยกเลิก

@@ -9,7 +9,7 @@ import { useState } from "react";
 export function DoctorAppointmentList() {
   const [selectedAppointment, setSelectedAppointment] = useState<string | null>(null);
 
-  const { data: appointments = [], refetch } = useQuery({
+  const { data: appointments = [], refetch } = useQuery<any[]>({
     queryKey: ["doctor-appointments"],
     queryFn: async () => {
       const res = await fetch("/api/appointments?type=doctor");

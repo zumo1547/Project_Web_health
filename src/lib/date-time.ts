@@ -6,6 +6,10 @@ function toDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
 }
 
+export function formatDate(value: Date | string) {
+  return formatSystemDateTime(value);
+}
+
 export function formatSystemDateTime(value: Date | string, short = false) {
   const date = toDate(value);
 

@@ -9,7 +9,7 @@ interface ElderlyAppointmentHistoryProps {
 }
 
 export function ElderlyAppointmentHistory({ elderlyId }: ElderlyAppointmentHistoryProps) {
-  const { data: history = [], isLoading } = useQuery({
+  const { data: history = [], isLoading } = useQuery<any[]>({
     queryKey: ["appointment-history", elderlyId],
     queryFn: async () => {
       const res = await fetch(`/api/appointments/history?elderlyId=${elderlyId}`);

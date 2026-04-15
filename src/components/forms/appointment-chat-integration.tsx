@@ -89,7 +89,6 @@ export function AppointmentChatIntegration({
         onClick={() => sendMessageMutation.mutate()}
         disabled={sendMessageMutation.isPending || !message.trim()}
         className="mt-3 w-full bg-purple-600 hover:bg-purple-700"
-        size="sm"
       >
         {sendMessageMutation.isPending ? "กำลังส่ง..." : "ส่งข้อความ"}
       </Button>

@@ -5,13 +5,14 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { formatDate } from "@/lib/date-time";
-import { AppointmentStatus } from "@/generated/prisma";
+import { AppointmentStatus, Appointment } from "@/generated/prisma";
+import type { Prisma } from "@/generated/prisma";
 
 export function AdminAppointmentManagement() {
   const [filterStatus, setFilterStatus] = useState<AppointmentStatus | "ALL">("ALL");
   const [activeAppointment, setActiveAppointment] = useState<string | null>(null);
 
-  const { data: appointments = [], refetch } = useQuery({
+  const { data: appointments = [], refetch } = useQuery<any[]>({
     queryKey: ["appointments", "all"],
     queryFn: async () => {
       const res = await fetch("/api/appointments?type=all");
