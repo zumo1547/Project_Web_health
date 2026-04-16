@@ -238,6 +238,46 @@ export default async function ElderlyDetailPage({
         />
       </section>
 
+      <section className="mt-6 grid gap-6 lg:grid-cols-2">
+        {canEditProfile ? null : (
+          <Card>
+            <CardTitle>ข้อมูลสำหรับคุณหมอ</CardTitle>
+            <CardDescription className="mt-2">
+              เปิดดูประวัติย้อนหลัง ค่าความดัน รูปยา และผล AI ได้จากหน้านี้ พร้อมอ่านข้อความก่อนรับเคสหรือแชทต่อในเคสที่รับแล้ว
+            </CardDescription>
+          </Card>
+        )}
+        <Card className="border border-amber-100 bg-[linear-gradient(180deg,rgba(255,251,235,0.96)_0%,rgba(240,253,244,0.94)_100%)]">
+          <CardTitle>สถิติในแฟ้มนี้</CardTitle>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-3xl bg-white/80 p-4">
+              <p className="text-sm font-medium text-slate-500">ความดันที่บันทึก</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">
+                {elderly._count.bloodPressures}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-white/80 p-4">
+              <p className="text-sm font-medium text-slate-500">รูปยา</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">
+                {elderly._count.medicineImages}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-white/80 p-4">
+              <p className="text-sm font-medium text-slate-500">ผล AI</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">
+                {elderly._count.aiScans}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-white/80 p-4">
+              <p className="text-sm font-medium text-slate-500">แชททั้งหมด</p>
+              <p className="mt-2 text-2xl font-black text-slate-900">
+                {elderly._count.chatMessages + elderly._count.aiHealthMessages}
+              </p>
+            </div>
+          </div>
+        </Card>
+      </section>
+
       <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr_0.8fr]">
         <div className="space-y-6">
           <Card>
@@ -396,44 +436,7 @@ export default async function ElderlyDetailPage({
                 notes: elderly.notes,
               }}
             />
-          ) : (
-            <Card>
-              <CardTitle>มุมมองสำหรับคุณหมอ</CardTitle>
-              <CardDescription className="mt-2">
-                เปิดดูประวัติย้อนหลัง ค่าความดัน รูปยา และผล AI ได้จากหน้านี้ พร้อมอ่านข้อความก่อนรับเคสหรือแชทต่อในเคสที่รับแล้ว
-              </CardDescription>
-            </Card>
-          )}
-
-          <Card className="border border-amber-100 bg-[linear-gradient(180deg,rgba(255,251,235,0.96)_0%,rgba(240,253,244,0.94)_100%)]">
-            <CardTitle>สถิติในแฟ้มนี้</CardTitle>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="rounded-3xl bg-white/80 p-4">
-                <p className="text-sm font-medium text-slate-500">ความดันที่บันทึก</p>
-                <p className="mt-2 text-2xl font-black text-slate-900">
-                  {elderly._count.bloodPressures}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-white/80 p-4">
-                <p className="text-sm font-medium text-slate-500">รูปยา</p>
-                <p className="mt-2 text-2xl font-black text-slate-900">
-                  {elderly._count.medicineImages}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-white/80 p-4">
-                <p className="text-sm font-medium text-slate-500">ผล AI</p>
-                <p className="mt-2 text-2xl font-black text-slate-900">
-                  {elderly._count.aiScans}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-white/80 p-4">
-                <p className="text-sm font-medium text-slate-500">แชททั้งหมด</p>
-                <p className="mt-2 text-2xl font-black text-slate-900">
-                  {elderly._count.chatMessages + elderly._count.aiHealthMessages}
-                </p>
-              </div>
-            </div>
-          </Card>
+          ) : null}
         </div>
       </section>
     </AppShell>
