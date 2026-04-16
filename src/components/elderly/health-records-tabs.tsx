@@ -147,9 +147,9 @@ export function HealthRecordsTabs({
                       href={image.imageUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex text-xs px-3 py-1.5 rounded-lg bg-amber-200 text-amber-900 hover:bg-amber-300 transition font-semibold"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 hover:from-amber-200 hover:to-yellow-200 transition font-semibold border border-amber-300 hover:shadow-sm"
                     >
-                      เปิดรูป
+                      🔍 เปิดรูป
                     </a>
                     {canDeleteUploads && (
                       <RecordDeleteButton
@@ -205,9 +205,9 @@ export function HealthRecordsTabs({
                       href={scan.imageUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex text-xs px-3 py-1.5 rounded-lg bg-purple-200 text-purple-900 hover:bg-purple-300 transition font-semibold"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 hover:from-purple-200 hover:to-pink-200 transition font-semibold border border-purple-300 hover:shadow-sm"
                     >
-                      เปิดรูป
+                      🔍 เปิดรูป
                     </a>
                     {canDeleteUploads && (
                       <RecordDeleteButton
