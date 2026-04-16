@@ -378,53 +378,6 @@ export default async function ElderlyDetailPage({
             </section>
           ) : null}
 
-          {canUseCaseChat ? (
-            <ChatPanel
-              elderlyId={elderly.id}
-              currentUserId={session.user.id}
-              title="แชทของเคสนี้"
-              description="หากคุณหมอรับเคสแล้ว สามารถคุยต่อในห้องนี้ได้ทันที และเมื่อปิดเคสห้องแชทจะเริ่มใหม่สำหรับครั้งถัดไป"
-              emptyMessage="ยังไม่มีข้อความในเคสนี้ เริ่มส่งข้อความแรกได้เลย"
-              placeholder="เช่น ช่วยดูอาการเวียนหัวหลังวัดความดัน / วันนี้กินยาตามเวลาแล้ว"
-              hasActiveDoctor={elderly.doctors.length > 0}
-              notice={
-                session.user.role === Role.DOCTOR
-                  ? "ห้องแชทนี้ใช้คุยกับผู้สูงอายุที่คุณรับเคสแล้ว หากปิดเคสสำเร็จ ห้องแชทจะรีเซ็ตสำหรับการขอคำปรึกษาครั้งถัดไป"
-                  : "สามารถคุยต่อในเคสนี้ได้ทันที และหากปิดเคสแล้วการทักครั้งใหม่จะเริ่มเป็นห้องแชทใหม่"
-              }
-              messages={elderly.chatMessages.map((message) => ({
-                id: message.id,
-                content: message.content,
-                createdAt: message.createdAt.toISOString(),
-                senderId: message.sender.id,
-                senderName: message.sender.name,
-                senderRole: message.sender.role,
-              }))}
-            />
-          ) : (
-            <Card>
-              <CardTitle>ข้อความก่อนรับเคส</CardTitle>
-              <CardDescription className="mt-2">
-                หน้านี้เปิดดูแฟ้มได้ก่อนรับเคส แต่ห้องแชทเต็มจะเปิดให้เมื่อคุณหมอรับเคสแล้ว
-              </CardDescription>
-              <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-4">
-                <p className="text-sm font-semibold text-amber-900">
-                  เรื่องที่ผู้สูงอายุทักมา
-                </p>
-                <p className="mt-2 text-sm leading-6 text-amber-950">
-                  {summarizeText(latestPatientMessage?.content) ??
-                    summarizeText(elderly.doctorRequestNote) ??
-                    "ยังไม่มีข้อความจากผู้สูงอายุ"}
-                </p>
-                {latestPatientMessage ? (
-                  <p className="mt-2 text-xs text-amber-800">
-                    ข้อความล่าสุดเมื่อ {formatDate(latestPatientMessage.createdAt)}
-                  </p>
-                ) : null}
-              </div>
-            </Card>
-          )}
-
           {canEditProfile ? (
             <ElderlyProfileSettingsForm
               elderlyId={elderly.id}
