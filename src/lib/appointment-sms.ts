@@ -14,47 +14,114 @@ export interface AppointmentReminderInput {
 }
 
 /**
- * Send SMS reminder for appointment
- * Can be integrated with Twilio, AWS SNS, or other SMS providers
- * For now, this is a placeholder that logs to console
- * 
- * TODO: Integrate with actual SMS provider (Twilio, AWS SNS, etc.)
+ * Format Thai phone number to international format
+ * Converts: 0812345678 → +66812345678
+ */
+function formatThaiPhoneNumber(phone: string): string {
+  let cleaned = phone.replace(/\D/g, ""); // Remove non-digits
+  
+  if (cleaned.startsWith("0")) {
+    cleaned = "66" + cleaned.substring(1);
+  } else if (!cleaned.startsWith("66")) {
+    cleaned = "66" + cleaned;
+  }
+  
+  return "+" + cleaned;
+}
+
+/**
+ * Send SMS via Twilio
+ * Production-ready implementation
  */
 export async function sendSms(input: SendSmsInput): Promise<boolean> {
   try {
-    // TODO: Implement actual SMS sending via Twilio or other provider
-    // Example for Twilio:
-    // const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    // const authToken = process.env.TWILIO_AUTH_TOKEN;
-    // const client = twilio(accountSid, authToken);
-    // await client.messages.create({
-    //   body: input.message,
-    //   from: process.env.TWILIO_PHONE_NUMBER,
-    //   to: input.phoneNumber,
-    // });
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
 
-    console.log(`[SMS] To: ${input.phoneNumber}\nMessage: ${input.message}`);
-    
-    // Log to audit
+    // Check if SMS is enabled
+    if (!accountSid || !authToken || !fromNumber) {
+      console.warn("[SMS] Twilio credentials not configured - SMS disabled");
+      
+      // Log to audit even if SMS is disabled
+      if (typeof window === "undefined") {
+        const { prisma } = await import("@/lib/prisma");
+        await prisma.auditLog.create({
+          data: {
+            action: "APPOINTMENT_SMS_DISABLED",
+            entityType: "Appointment",
+            entityId: "sms",
+            meta: {
+              phone: input.phoneNumber,
+              message: input.message,
+              reason: "Twilio credentials not configured",
+            },
+          },
+        });
+      }
+      return false;
+    }
+
+    // Dynamic import of twilio to avoid build issues if not installed
+    let twilio;
+    try {
+      twilio = require("twilio");
+    } catch (e) {
+      console.error("[SMS] Twilio library not installed");
+      return false;
+    }
+
+    const client = twilio(accountSid, authToken);
+    const formattedPhone = formatThaiPhoneNumber(input.phoneNumber);
+
+    const response = await client.messages.create({
+      body: input.message,
+      from: fromNumber,
+      to: formattedPhone,
+    });
+
+    console.log(`[SMS Sent] SID: ${response.sid}, To: ${formattedPhone}`);
+
+    // Log successful SMS to audit
     if (typeof window === "undefined") {
-      // Server-side only
       const { prisma } = await import("@/lib/prisma");
       await prisma.auditLog.create({
         data: {
           action: "APPOINTMENT_SMS_SENT",
           entityType: "Appointment",
-          entityId: "sms",
+          entityId: response.sid || "sms",
           meta: {
             phone: input.phoneNumber,
+            formattedPhone: formattedPhone,
             message: input.message,
+            twilioSid: response.sid,
+            status: response.status,
           },
         },
       });
     }
 
-    return true;
+    return response.status !== "failed";
   } catch (error) {
-    console.error("Failed to send SMS:", error);
+    console.error("[SMS Error]", error instanceof Error ? error.message : error);
+    
+    // Log error to audit
+    if (typeof window === "undefined") {
+      const { prisma } = await import("@/lib/prisma");
+      await prisma.auditLog.create({
+        data: {
+          action: "APPOINTMENT_SMS_FAILED",
+          entityType: "Appointment",
+          entityId: "sms-error",
+          meta: {
+            phone: input.phoneNumber,
+            message: input.message,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        },
+      });
+    }
+    
     return false;
   }
 }
