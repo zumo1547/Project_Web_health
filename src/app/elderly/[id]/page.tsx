@@ -6,6 +6,7 @@ import { DoctorAppointmentForm } from "@/components/forms/doctor-appointment-for
 import { DoctorHospitalSharePanel } from "@/components/forms/doctor-hospital-share-panel";
 import { ElderlyProfileSettingsForm } from "@/components/forms/elderly-profile-settings-form";
 import { RecordDeleteButton } from "@/components/forms/record-delete-button";
+import { HealthRecordsTabs } from "@/components/elderly/health-records-tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { DoctorCaseStatus, Role } from "@/generated/prisma";
@@ -237,7 +238,7 @@ export default async function ElderlyDetailPage({
         />
       </section>
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+      <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr_0.8fr]">
         <div className="space-y-6">
           <Card>
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -304,132 +305,52 @@ export default async function ElderlyDetailPage({
             </div>
           </Card>
 
-          <Card>
-            <CardTitle>ประวัติความดัน</CardTitle>
-            <CardDescription className="mt-2">
-              ดูค่าความดันย้อนหลังทั้งหมดของแฟ้มนี้
-            </CardDescription>
-            <div className="mt-5 space-y-3">
-              {elderly.bloodPressures.map((record) => {
-                const assessment = getBloodPressureAssessment(
-                  record.systolic,
-                  record.diastolic,
-                );
+          <HealthRecordsTabs
+            elderlyId={elderly.id}
+            bloodPressures={elderly.bloodPressures}
+            medicineImages={elderly.medicineImages}
+            aiScans={elderly.aiScans}
+            canDeleteUploads={canDeleteUploads}
+          />
+        </div>
 
-                return (
-                  <div
-                    key={record.id}
-                    className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-base font-semibold text-slate-900">
-                        {record.systolic}/{record.diastolic} mmHg
-                        {record.pulse ? ` ชีพจร ${record.pulse}` : ""}
-                      </p>
-                      <Badge tone={assessment.tone}>{assessment.shortLabel}</Badge>
-                    </div>
-                    <p className="mt-2 text-sm text-slate-600">
-                      วัดเมื่อ {formatDate(record.measuredAt)}
-                    </p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      {record.note || "ไม่มีหมายเหตุเพิ่มเติม"}
-                    </p>
-                  </div>
-                );
-              })}
-
-              {elderly.bloodPressures.length === 0 ? (
-                <p className="text-sm text-slate-500">ยังไม่มีประวัติความดัน</p>
-              ) : null}
-            </div>
-          </Card>
-
-          <Card>
-            <CardTitle>ประวัติรูปยาและผล AI</CardTitle>
-            <CardDescription className="mt-2">
-              ใช้ดูสิ่งที่เคยอัปโหลดและผลวิเคราะห์ยาหรือรูปความดันย้อนหลัง
-            </CardDescription>
-            <div className="mt-5 grid gap-4 lg:grid-cols-2">
-              {elderly.aiScans.map((scan) => (
-                <div
-                  key={scan.id}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm font-semibold text-slate-900">
-                      {scan.scanType === "MEDICINE_IMAGE"
-                        ? "สแกนรูปยา"
-                        : "สแกนรูปความดัน"}
-                    </p>
-                    <Badge tone="amber">
-                      ความมั่นใจ {Math.round((scan.confidence ?? 0) * 100)}%
-                    </Badge>
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-slate-700">
-                    {scan.summary || "ยังไม่มีสรุปผล"}
-                  </p>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                    <span>{formatDate(scan.createdAt)}</span>
-                    <a
-                      href={scan.imageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-semibold text-emerald-700"
-                    >
-                      เปิดรูปต้นฉบับ
-                    </a>
-                    {canDeleteUploads ? (
-                      <RecordDeleteButton
-                        endpoint={`/api/elderly/${elderly.id}/ai-scan/${scan.id}`}
-                        confirmMessage="ต้องการลบผลสแกนนี้ใช่หรือไม่? หากรูปนี้อัปผิด ระบบจะลบผลวิเคราะห์และรายการที่เกี่ยวข้องออกจากแฟ้มด้วย"
-                        label="ลบผลสแกน"
-                      />
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-
-              {elderly.aiScans.length === 0 ? (
-                <p className="text-sm text-slate-500">ยังไม่มีผลสแกนจาก AI</p>
-              ) : null}
-            </div>
-
-            <div className="mt-6 grid gap-4 lg:grid-cols-2">
-              {elderly.medicineImages.map((image) => (
-                <div
-                  key={image.id}
-                  className="rounded-3xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <p className="text-sm font-semibold text-slate-900">
-                    {image.label || "รูปยาที่ยังไม่ได้ใส่ชื่อกำกับ"}
-                  </p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    อัปโหลดเมื่อ {formatDate(image.uploadedAt)}
-                  </p>
-                  <a
-                    href={image.imageUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
-                  >
-                    เปิดรูป
-                  </a>
-                  {canDeleteUploads ? (
-                    <RecordDeleteButton
-                      endpoint={`/api/elderly/${elderly.id}/medicine-upload/${image.id}`}
-                      confirmMessage="ต้องการลบรูปยานี้ใช่หรือไม่? หากเคยสแกนด้วย AI มาก่อน ผลวิเคราะห์ที่เกี่ยวข้องจะถูกลบออกด้วย"
-                      label="ลบรูปนี้"
-                      className="mt-3"
-                    />
-                  ) : null}
-                </div>
-              ))}
-
-              {elderly.medicineImages.length === 0 ? (
-                <p className="text-sm text-slate-500">ยังไม่มีรูปยาที่อัปโหลด</p>
-              ) : null}
-            </div>
-          </Card>
+        <div className="space-y-6">
+          {canUseCaseChat ? (
+            <ChatPanel
+              elderlyId={elderly.id}
+              currentUserId={session.user.id}
+              title="💬 แชทของเคสนี้"
+              description="ติดต่อสื่อสารกับผู้สูงอายุ"
+              emptyMessage="ยังไม่มีข้อความในเคสนี้"
+              placeholder="พิมพ์ข้อความ..."
+              hasActiveDoctor={elderly.doctors.length > 0}
+              notice="ห้องแชทนี้สำหรับคุณหมอที่รับเคสแล้ว"
+              messages={elderly.chatMessages.map((message) => ({
+                id: message.id,
+                content: message.content,
+                createdAt: message.createdAt.toISOString(),
+                senderId: message.sender.id,
+                senderName: message.sender.name,
+                senderRole: message.sender.role,
+              }))}
+            />
+          ) : (
+            <Card>
+              <CardTitle>ข้อความก่อนรับเคส</CardTitle>
+              <CardDescription className="mt-2">
+                เปิดแชทได้หลังรับเคส
+              </CardDescription>
+              <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-semibold text-amber-900">
+                  เรื่องที่ผู้สูงอายุทักมา
+                </p>
+                <p className="mt-2 text-sm text-amber-950 line-clamp-3">
+                  {(latestPatientMessage?.content || elderly.doctorRequestNote) ||
+                    "ยังไม่มีข้อความ"}
+                </p>
+              </div>
+            </Card>
+          )}
         </div>
 
         <div className="space-y-6">
