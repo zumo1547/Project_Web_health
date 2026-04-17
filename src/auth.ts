@@ -4,6 +4,7 @@ import Facebook from "next-auth/providers/facebook";
 import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@/generated/prisma";
+import { getAppBaseUrl } from "@/lib/app-url";
 import { hasCompletedGeneralProfile, ensureElderlyProfileForUser } from "@/lib/elderly-profile";
 import { canLoginToPortal } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,7 @@ const googleEnabled = Boolean(
 const facebookEnabled = Boolean(
   process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET,
 );
+const appBaseUrl = getAppBaseUrl();
 
 async function syncOAuthElderlyUser(userId?: string, email?: string | null) {
   const normalizedEmail = email?.trim().toLowerCase();
@@ -159,6 +161,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       : []),
   ],
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) {
+        return `${appBaseUrl}${url}`;
+      }
+
+      try {
+        const target = new URL(url);
+        const allowedOrigins = new Set([
+          new URL(baseUrl).origin,
+          new URL(appBaseUrl).origin,
+        ]);
+
+        if (allowedOrigins.has(target.origin)) {
+          return url;
+        }
+      } catch {
+        return appBaseUrl;
+      }
+
+      return appBaseUrl;
+    },
     async signIn({ user, account }) {
       if (account?.provider === "credentials") {
         return true;

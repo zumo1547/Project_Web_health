@@ -1,10 +1,12 @@
+import { getAppBaseUrl } from "@/lib/app-url";
+
 const OVERPASS_ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
   "https://lz4.overpass-api.de/api/interpreter",
 ];
 const NOMINATIM_ENDPOINT = "https://nominatim.openstreetmap.org/search";
-const APP_USER_AGENT = "SeniorHealthCheck/1.0 (+https://project-web-health.vercel.app)";
+const APP_USER_AGENT = `SeniorHealthCheck/1.0 (+${getAppBaseUrl()})`;
 const DEFAULT_RADIUS_KM = 8;
 const MAX_RADIUS_KM = 20;
 const MAX_RESULTS = 6;
