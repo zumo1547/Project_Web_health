@@ -16,13 +16,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://seniorhealthcheck.xyz"),
   title: "Senior Health Check",
   description:
-    "แอปตรวจสุขภาพสำหรับผู้สูงอายุ พร้อมบันทึกความดัน สแกนยา สรุปสุขภาพด้วย AI และติดตามอาการร่วมกับคุณหมอ",
+    "แพลตฟอร์มดูแลสุขภาพผู้สูงอายุ ใช้งานง่ายทั้งคอมและมือถือ สแกนยา บันทึกความดัน และติดตามข้อมูลร่วมกับคุณหมอ",
   icons: {
     icon: "/icon.png",
     shortcut: "/icon.png",
     apple: "/apple-icon.png",
+  },
+  openGraph: {
+    title: "Senior Health Check",
+    description:
+      "ดูแลสุขภาพผู้สูงอายุจากหน้าเดียว: สแกนยา บันทึกความดัน และคุยกับคุณหมอได้ทันที",
+    url: "https://seniorhealthcheck.xyz",
+    siteName: "Senior Health Check",
+    locale: "th_TH",
+    type: "website",
+    images: [
+      {
+        url: "/preview-web.png",
+        width: 1200,
+        height: 630,
+        alt: "Senior Health Check Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Senior Health Check",
+    description:
+      "สแกนยา บันทึกความดัน และติดตามอาการผู้สูงอายุแบบใช้งานง่าย",
+    images: ["/preview-web.png"],
   },
 };
 
