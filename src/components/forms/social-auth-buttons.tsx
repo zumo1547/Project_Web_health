@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 
-export type SocialProvider = "google" | "facebook";
+export type SocialProvider = "google" | "facebook" | "line";
 
 type SocialAuthButtonsProps = {
   providers: SocialProvider[];
@@ -48,16 +48,33 @@ function FacebookIcon() {
   );
 }
 
+function LineIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+      <path
+        fill="#06C755"
+        d="M12 2C6.5 2 2 5.8 2 10.5c0 4.2 3.6 7.7 8.4 8.4v3.1c0 .3.3.5.6.3l3.7-2.2c5-.8 8.7-4.2 8.7-8.5C23.4 5.8 18.9 2 13.4 2H12Z"
+      />
+      <path
+        fill="#FFFFFF"
+        d="M8.2 9.1h1.1v3.2h1.7v1H8.2V9.1Zm3.2 0h1.1v4.2h-1.1V9.1Zm2.2 0h1l1.6 2.2V9.1h1.1v4.2h-1l-1.6-2.2v2.2h-1.1V9.1Z"
+      />
+    </svg>
+  );
+}
+
 const toneStyles = {
   emerald: {
     section: "border-emerald-100 bg-emerald-50/65",
     google: "hover:border-emerald-200 hover:bg-white",
     facebook: "hover:border-sky-200 hover:bg-white",
+    line: "hover:border-emerald-300 hover:bg-white",
   },
   sky: {
     section: "border-sky-100 bg-sky-50/65",
     google: "hover:border-sky-200 hover:bg-white",
     facebook: "hover:border-cyan-200 hover:bg-white",
+    line: "hover:border-emerald-300 hover:bg-white",
   },
 };
 
@@ -125,6 +142,22 @@ export function SocialAuthButtons({
             {pendingProvider === "facebook"
               ? "กำลังพาไปยัง Facebook..."
               : "เข้าสู่ระบบด้วย Facebook"}
+          </Button>
+        ) : null}
+
+        {providers.includes("line") ? (
+          <Button
+            type="button"
+            variant="ghost"
+            fullWidth
+            onClick={() => handleSocialSignIn("line")}
+            disabled={Boolean(pendingProvider)}
+            className={`justify-start gap-3 rounded-[1.4rem] border border-slate-200 bg-white px-4 text-slate-900 ${styles.line}`}
+          >
+            <LineIcon />
+            {pendingProvider === "line"
+              ? "กำลังพาไปยัง LINE..."
+              : "เข้าสู่ระบบด้วย LINE"}
           </Button>
         ) : null}
       </div>

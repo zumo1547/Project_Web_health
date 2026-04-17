@@ -27,7 +27,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET
       ? "facebook"
       : null,
-  ].filter(Boolean) as ("google" | "facebook")[];
+    process.env.AUTH_LINE_ID && process.env.AUTH_LINE_SECRET ? "line" : null,
+  ].filter(Boolean) as ("google" | "facebook" | "line")[];
 
   return (
     <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.10),transparent_30%),linear-gradient(180deg,#fbfffd_0%,#eff8f3_56%,#f8efe3_100%)]">

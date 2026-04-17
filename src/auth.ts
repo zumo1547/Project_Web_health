@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Facebook from "next-auth/providers/facebook";
 import Google from "next-auth/providers/google";
+import Line from "next-auth/providers/line";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@/generated/prisma";
 import { getAppBaseUrl } from "@/lib/app-url";
@@ -17,6 +18,7 @@ const googleEnabled = Boolean(
 const facebookEnabled = Boolean(
   process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET,
 );
+const lineEnabled = Boolean(process.env.AUTH_LINE_ID && process.env.AUTH_LINE_SECRET);
 const appBaseUrl = getAppBaseUrl();
 
 async function syncOAuthElderlyUser(userId?: string, email?: string | null) {
@@ -154,6 +156,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                   typeof profile.picture?.data?.url === "string"
                     ? profile.picture.data.url
                     : null,
+              };
+            },
+          }),
+        ]
+      : []),
+    ...(lineEnabled
+      ? [
+          Line({
+            clientId: process.env.AUTH_LINE_ID!,
+            clientSecret: process.env.AUTH_LINE_SECRET!,
+            allowDangerousEmailAccountLinking: true,
+            authorization: {
+              params: {
+                scope: "openid profile email",
+              },
+            },
+            profile(profile) {
+              const normalizedName =
+                typeof profile.name === "string" && profile.name.trim()
+                  ? profile.name.trim()
+                  : "LINE User";
+
+              const fallbackEmail =
+                typeof profile.sub === "string" && profile.sub.trim()
+                  ? `${profile.sub}@line.local`
+                  : null;
+
+              return {
+                id: String(profile.sub),
+                name: normalizedName,
+                email:
+                  typeof profile.email === "string" && profile.email.trim()
+                    ? profile.email.trim().toLowerCase()
+                    : fallbackEmail,
+                image: typeof profile.picture === "string" ? profile.picture : null,
               };
             },
           }),
