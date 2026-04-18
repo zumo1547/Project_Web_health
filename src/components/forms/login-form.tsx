@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { FormEvent, useEffect, useId, useState, useTransition } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import {
   SocialAuthButtons,
@@ -10,9 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatSystemDateTime } from "@/lib/date-time";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useId, useState, useTransition } from "react";
 
 type LoginPortal = "USER" | "DOCTOR" | "ADMIN";
 
@@ -46,21 +46,21 @@ const accentStyles: Record<
 > = {
   user: {
     card:
-      "border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,253,244,0.96)_100%)]",
+      "border-emerald-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(240,253,244,0.96)_100%)]",
     button: "bg-emerald-700 hover:bg-emerald-800 focus-visible:outline-emerald-700",
     hint: "text-emerald-700",
     socialTone: "emerald",
   },
   doctor: {
     card:
-      "border-cyan-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(240,249,255,0.96)_100%)]",
+      "border-cyan-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(240,249,255,0.96)_100%)]",
     button: "bg-slate-950 hover:bg-slate-800 focus-visible:outline-slate-900",
     hint: "text-cyan-700",
     socialTone: "sky",
   },
   admin: {
     card:
-      "border-amber-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(255,251,235,0.96)_100%)]",
+      "border-amber-100 bg-[linear-gradient(180deg,rgba(255,255,255,0.99)_0%,rgba(255,251,235,0.96)_100%)]",
     button: "bg-amber-600 hover:bg-amber-700 focus-visible:outline-amber-600",
     hint: "text-amber-700",
     socialTone: "emerald",
@@ -180,13 +180,21 @@ export function LoginForm({
   className = "",
 }: LoginFormProps) {
   const router = useRouter();
+  const emailInputId = useId();
   const passwordInputId = useId();
+  const errorId = useId();
+  const emailHintId = useId();
+  const passwordHintId = useId();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberedLogins, setRememberedLogins] = useState<RememberedLogin[]>([]);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
   const styles = accentStyles[accent];
+  const showSocialLogin = portal === "USER" && socialProviders.length > 0;
+  const showRegisterPrompt = portal === "USER";
 
   useEffect(() => {
     setRememberedLogins(loadRememberedLogins(portal));
@@ -229,79 +237,73 @@ export function LoginForm({
     });
   }
 
-  const showSocialLogin = portal === "USER" && socialProviders.length > 0;
-  const showRegisterPrompt = portal === "USER";
-
   return (
     <Card
-      className={`mx-auto w-full max-w-[31rem] rounded-[2.15rem] ${styles.card} p-5 sm:p-6 lg:max-w-[30rem] xl:max-w-[31rem] ${className}`}
+      className={`mx-auto w-full rounded-[2rem] p-5 sm:p-6 md:p-7 ${styles.card} ${className}`}
     >
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className={`text-sm font-bold uppercase tracking-[0.24em] ${styles.hint}`}>
-            Portal Login
-          </p>
-          <span className="rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-            ใช้งานได้ทั้งมือถือและคอม
-          </span>
-        </div>
-
-        <div className="space-y-2">
-          <CardTitle className="text-[1.85rem] sm:text-[2.05rem]">{title}</CardTitle>
-          <CardDescription className="max-w-xl">{description}</CardDescription>
-        </div>
-      </div>
+      <header className="space-y-2">
+        <p className={`text-sm font-bold uppercase tracking-[0.24em] ${styles.hint}`}>
+          Portal Login
+        </p>
+        <CardTitle className="text-[1.95rem] sm:text-[2.1rem]">{title}</CardTitle>
+        <CardDescription className="text-base leading-7">{description}</CardDescription>
+      </header>
 
       {rememberedLogins.length > 0 ? (
-        <div className="mt-5 rounded-[1.5rem] border border-white/80 bg-white/82 p-4 sm:p-5">
-          <p className="text-base font-bold text-slate-950">บัญชีที่ใช้บ่อยในเครื่องนี้</p>
+        <section className="mt-5 rounded-[1.45rem] border border-slate-200 bg-white/90 p-4 sm:p-5">
+          <h2 className="text-lg font-bold text-slate-900">บัญชีที่ใช้บ่อยในเครื่องนี้</h2>
           <p className="mt-1 text-sm leading-7 text-slate-600">
-            กดเลือกบัญชีก่อน แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบได้ทันที
+            เลือกบัญชีก่อน แล้วกรอกรหัสผ่านเพื่อเข้าสู่ระบบได้ทันที
           </p>
 
-          <div className="mt-4 grid gap-3">
+          <div className="mt-3 grid gap-3">
             {rememberedLogins.map((item) => (
               <button
                 key={`${item.portal}-${item.email}`}
                 type="button"
                 onClick={() => handlePickRememberedLogin(item.email)}
-                className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+                className="rounded-[1.05rem] border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
               >
                 <p className="text-base font-bold text-slate-950">{item.email}</p>
-                <p className="mt-1 text-sm text-slate-500">ใช้บ่อยแล้ว {item.usageCount} ครั้ง</p>
-                <p className="mt-1 text-xs text-slate-400">
-                  ใช้ล่าสุด {formatDate(item.lastUsedAt)}
-                </p>
+                <p className="mt-1 text-sm text-slate-500">ใช้งานแล้ว {item.usageCount} ครั้ง</p>
+                <p className="mt-1 text-xs text-slate-400">ใช้ล่าสุด {formatDate(item.lastUsedAt)}</p>
               </button>
             ))}
           </div>
-        </div>
+        </section>
       ) : null}
 
       {showSocialLogin ? (
-        <div className="mt-5">
+        <section className="mt-5">
           <SocialAuthButtons
             providers={socialProviders}
             callbackUrl={defaultCallbackUrl}
-            title="เริ่มใช้งานด้วย Google หรือ Facebook"
+            title="เริ่มใช้งานด้วย Google, Facebook หรือ LINE"
             description="เหมาะกับการเข้าสู่ระบบอย่างรวดเร็ว กดครั้งเดียวแล้วเริ่มใช้งานต่อได้เลย"
             tone={styles.socialTone}
           />
-        </div>
+        </section>
       ) : null}
 
-      <div className="mt-5 rounded-[1.5rem] border border-white/80 bg-white/82 p-4 sm:p-5">
-        <div className="space-y-2">
-          <p className="text-base font-bold text-slate-950">เข้าสู่ระบบด้วยอีเมล</p>
-          <p className="text-sm leading-7 text-slate-600">
-            ถ้ามีบัญชีเดิมอยู่แล้ว สามารถใช้อีเมลและรหัสผ่านเดิมเข้าสู่ระบบได้ตามปกติ
-          </p>
-        </div>
+      <div className="my-5 flex items-center gap-3 text-slate-400" aria-hidden="true">
+        <span className="h-px flex-1 bg-slate-200" />
+        <span className="text-sm font-bold">หรือเข้าสู่ระบบด้วยอีเมล</span>
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
 
-        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-slate-700">อีเมล</span>
+      <section className="rounded-[1.45rem] border border-slate-200 bg-white/90 p-4 sm:p-5">
+        <h2 className="text-lg font-bold text-slate-900">เข้าสู่ระบบด้วยอีเมลและรหัสผ่าน</h2>
+        <p className="mt-1 text-sm leading-7 text-slate-600">
+          ถ้ามีบัญชีเดิมอยู่แล้ว สามารถใช้อีเมลและรหัสผ่านเดิมได้ตามปกติ
+        </p>
+
+        <form className="mt-4 space-y-4" onSubmit={handleSubmit} noValidate>
+          <div className="space-y-2">
+            <label htmlFor={emailInputId} className="block text-base font-bold text-slate-700">
+              อีเมล
+            </label>
             <Input
+              id={emailInputId}
               name="email"
               type="email"
               placeholder="name@example.com"
@@ -309,11 +311,20 @@ export function LoginForm({
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="username"
               required
+              aria-describedby={emailHintId}
             />
-          </label>
+            <p id={emailHintId} className="text-sm text-slate-500">
+              ใช้อีเมลเดียวกับตอนสมัครสมาชิก
+            </p>
+          </div>
 
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-slate-700">รหัสผ่าน</span>
+          <div className="space-y-2">
+            <label
+              htmlFor={passwordInputId}
+              className="block text-base font-bold text-slate-700"
+            >
+              รหัสผ่าน
+            </label>
             <Input
               id={passwordInputId}
               name="password"
@@ -323,11 +334,20 @@ export function LoginForm({
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
               required
+              aria-describedby={error ? `${passwordHintId} ${errorId}` : passwordHintId}
+              aria-invalid={Boolean(error)}
             />
-          </label>
+            <p id={passwordHintId} className="text-sm text-slate-500">
+              หากพิมพ์ผิด ระบบจะแจ้งเตือนให้ทันที
+            </p>
+          </div>
 
           {error ? (
-            <p className="rounded-[1.2rem] bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-700">
+            <p
+              id={errorId}
+              role="alert"
+              className="rounded-[1rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-700"
+            >
               {error}
             </p>
           ) : null}
@@ -336,24 +356,29 @@ export function LoginForm({
             {isPending ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
           </Button>
 
-          {showRegisterPrompt ? (
-            <div className="flex flex-col gap-2 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/70 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-bold text-slate-900">ยังไม่มีบัญชีใช่ไหม?</p>
-                <p className="mt-1 leading-6 text-slate-600">
-                  สมัครสมาชิกก่อน แล้วกลับมาเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
-                </p>
-              </div>
-              <Link
-                href="/register"
-                className="inline-flex shrink-0 rounded-[1rem] border border-emerald-200 bg-white px-4 py-2.5 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
-              >
-                สมัครสมาชิก
-              </Link>
-            </div>
-          ) : null}
+          {/* TODO: Add dedicated forgot-password flow when backend endpoint is available. */}
+          <p className="text-sm leading-7 text-slate-500">
+            หากลืมรหัสผ่าน กรุณาติดต่อผู้ดูแลหรือครอบครัวเพื่อช่วยรีเซ็ตรหัสผ่าน
+          </p>
         </form>
-      </div>
+      </section>
+
+      {showRegisterPrompt ? (
+        <section className="mt-5 rounded-[1.45rem] border border-emerald-100 bg-emerald-50/75 p-4 sm:p-5">
+          <h2 className="text-lg font-bold text-slate-900">ยังไม่มีบัญชีใช่ไหม?</h2>
+          <p className="mt-1 text-sm leading-7 text-slate-600">
+            สมัครสมาชิกก่อน แล้วค่อยกลับมาหน้าเข้าสู่ระบบเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
+          </p>
+          <div className="mt-3">
+            <Link
+              href="/register"
+              className="inline-flex min-h-[2.9rem] items-center rounded-[1rem] border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
+            >
+              สมัครสมาชิก
+            </Link>
+          </div>
+        </section>
+      ) : null}
     </Card>
   );
 }

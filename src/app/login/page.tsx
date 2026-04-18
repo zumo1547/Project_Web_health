@@ -31,35 +31,42 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   ].filter(Boolean) as ("google" | "facebook" | "line")[];
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.10),transparent_30%),linear-gradient(180deg,#fbfffd_0%,#eff8f3_56%,#f8efe3_100%)]">
-      <div className="mx-auto flex min-h-screen max-w-[1320px] items-center px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="grid w-full gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(430px,0.92fr)] lg:items-center xl:gap-10">
-          <AuthShowcase
-            eyebrow="แอปตรวจสุขภาพผู้สูงอายุ"
-            title="เข้าสู่ระบบผู้สูงอายุ"
-            description="ดูแลเรื่องยา ความดัน และประวัติสุขภาพได้จากหน้าเดียว พร้อมขอคำแนะนำจาก AI หรือส่งต่อข้อมูลให้คุณหมอดูได้ทันที ใช้งานง่าย อ่านสบาย และเหมาะกับทั้งคอมและมือถือ"
-            supportItems={[
-              "สแกนรูปยาและค่าความดันจากรูป เพื่อช่วยอ่านและสรุปข้อมูลเบื้องต้นได้รวดเร็ว",
-              "เก็บประวัติสุขภาพ ยาที่ใช้ และบันทึกสำคัญไว้ดูย้อนหลังได้ในที่เดียว",
-              "คุยกับ AI หรือส่งอาการให้คุณหมอดูต่อได้ทันที เมื่อต้องการคำแนะนำเพิ่มเติม",
-            ]}
-            audienceItems={["ผู้สูงอายุ", "ครอบครัว", "ผู้ดูแลสุขภาพ"]}
-            quickLinks={[{ href: "/register", label: "ยังไม่มีบัญชี? สมัครสมาชิก" }]}
-            tone="sky"
-          />
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.12),transparent_28%),linear-gradient(180deg,#fbfffd_0%,#eef8f3_56%,#f8efe3_100%)]">
+      <div className="mx-auto grid min-h-screen w-full max-w-[1320px] gap-6 px-4 py-7 sm:px-6 md:py-9 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,40rem)] lg:items-center lg:gap-9 lg:px-8">
+        <AuthShowcase
+          eyebrow="ศูนย์สุขภาพผู้สูงอายุ"
+          title="เข้าสู่ระบบผู้สูงอายุ"
+          description="ดูแลสุขภาพจากหน้าเดียวได้ทันที บันทึกความดัน อัปโหลดรูปยา ขอคำแนะนำจาก AI และส่งข้อมูลให้คุณหมอได้ง่าย ออกแบบให้ปุ่มใหญ่ ตัวอักษรชัด เหมาะกับผู้สูงอายุและผู้ดูแล"
+          supportItems={[
+            "รวมประวัติสุขภาพไว้ในที่เดียว ค้นหาง่าย ไม่สับสน",
+            "บันทึกค่าความดันและผลสรุปสุขภาพแบบอ่านเข้าใจง่าย",
+            "อัปโหลดรูปยาให้ AI ช่วยสรุปข้อมูลเบื้องต้นก่อนพบแพทย์",
+            "ส่งข้อความขอคำปรึกษาคุณหมอ และติดตามนัดหมายได้สะดวก",
+          ]}
+          audienceItems={["ผู้สูงอายุ", "ครอบครัวและผู้ดูแล", "ผู้ที่ต้องติดตามสุขภาพประจำวัน"]}
+          startSteps={[
+            "1. เลือกวิธีเข้าสู่ระบบที่สะดวกที่สุด (อีเมล หรือ Google/Facebook/LINE)",
+            "2. เข้าสู่หน้าพอร์ทัลเพื่อเริ่มบันทึกข้อมูลสุขภาพ",
+            "3. หากเป็นครั้งแรก ระบบจะพาไปกรอกข้อมูลพื้นฐานก่อนใช้งาน",
+          ]}
+          quickLinks={[
+            { href: "/register", label: "ยังไม่มีบัญชี? สมัครสมาชิกที่นี่" },
+            { href: "/start", label: "กลับหน้าเริ่มใช้งาน" },
+          ]}
+          tone="sky"
+        />
 
-          <div className="page-section-animate lg:justify-self-end" data-delay="1">
-            <LoginForm
-              defaultCallbackUrl={callbackUrl ?? "/elderly-portal"}
-              portal="USER"
-              accent="user"
-              socialProviders={socialProviders}
-              title="เข้าสู่แอปผู้สูงอายุ"
-              description="เลือกวิธีเข้าสู่ระบบที่สะดวกที่สุด แล้วเริ่มบันทึกข้อมูลสุขภาพได้ทันที"
-            />
-          </div>
+        <div className="page-section-animate lg:justify-self-end" data-delay="1">
+          <LoginForm
+            defaultCallbackUrl={callbackUrl ?? "/elderly-portal"}
+            portal="USER"
+            accent="user"
+            socialProviders={socialProviders}
+            title="เข้าสู่แอปผู้สูงอายุ"
+            description="เลือกวิธีเข้าสู่ระบบที่สะดวก แล้วเริ่มบันทึกข้อมูลสุขภาพได้ทันที"
+          />
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState, useTransition } from "react";
+import { FormEvent, useId, useMemo, useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -24,8 +24,6 @@ type RegisterFormProps = {
   className?: string;
 };
 
-const prefixOptions = ["นาย", "นาง", "นางสาว", "คุณ", "ดร."];
-
 function collectErrorMessage(error: unknown) {
   if (typeof error === "string") {
     return error;
@@ -43,7 +41,7 @@ function collectErrorMessage(error: unknown) {
     }
   }
 
-  return "สมัครสมาชิกไม่สำเร็จ";
+  return "สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
 }
 
 function roleLabel(role: UserRole) {
@@ -62,9 +60,9 @@ export function RegisterForm({
   allowedRoles = ["ELDERLY"],
   showRoleSelect = false,
   autoSignIn = true,
-  callbackUrl = "/elderly-portal",
-  title = "สร้างบัญชีผู้สูงอายุ",
-  description = "กรอกข้อมูลพื้นฐานให้ครบ เพื่อเริ่มใช้งานแฟ้มสุขภาพส่วนตัวได้ทันที",
+  callbackUrl = "/complete-profile",
+  title = "สมัครสมาชิกผู้สูงอายุ",
+  description = "กรอกข้อมูลที่จำเป็นก่อน แล้วระบบจะพาไปกรอกข้อมูลทั่วไปในขั้นตอนถัดไป",
   submitLabel = "สมัครสมาชิกและเริ่มใช้งาน",
   className = "",
 }: RegisterFormProps) {
@@ -76,18 +74,24 @@ export function RegisterForm({
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
 
+  const fullNameId = useId();
+  const emailId = useId();
+  const passwordId = useId();
+  const confirmPasswordId = useId();
+  const termsId = useId();
+  const errorId = useId();
+  const messageId = useId();
+  const passwordGuideId = useId();
+
   const isManagedMode = showRoleSelect;
 
   const passwordChecks = useMemo(
     () => [
       { label: "อย่างน้อย 8 ตัวอักษร", passed: password.length >= 8 },
-      { label: "มีตัวพิมพ์ใหญ่ภาษาอังกฤษ", passed: /[A-Z]/.test(password) },
-      { label: "มีตัวพิมพ์เล็กภาษาอังกฤษ", passed: /[a-z]/.test(password) },
+      { label: "มีตัวพิมพ์ใหญ่ A-Z อย่างน้อย 1 ตัว", passed: /[A-Z]/.test(password) },
+      { label: "มีตัวพิมพ์เล็ก a-z อย่างน้อย 1 ตัว", passed: /[a-z]/.test(password) },
       { label: "มีตัวเลขอย่างน้อย 1 ตัว", passed: /\d/.test(password) },
-      {
-        label: "มีอักขระพิเศษอย่างน้อย 1 ตัว",
-        passed: /[^A-Za-z0-9]/.test(password),
-      },
+      { label: "มีอักขระพิเศษอย่างน้อย 1 ตัว", passed: /[^A-Za-z0-9]/.test(password) },
     ],
     [password],
   );
@@ -110,12 +114,12 @@ export function RegisterForm({
     setMessage("");
 
     if (password !== confirmPassword) {
-      setError("กรุณายืนยันรหัสผ่านให้ตรงกัน");
+      setError("รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน");
       return;
     }
 
     if (!passwordReady) {
-      setError("กรุณาตั้งรหัสผ่านให้ปลอดภัยตามเงื่อนไขที่กำหนด");
+      setError("กรุณาตั้งรหัสผ่านให้ผ่านเงื่อนไขความปลอดภัยก่อน");
       return;
     }
 
@@ -124,20 +128,15 @@ export function RegisterForm({
         const payload = isManagedMode
           ? {
               name: String(formData.get("name") ?? "").trim(),
-              email: String(formData.get("email") ?? "").trim(),
+              email: String(formData.get("email") ?? "").trim().toLowerCase(),
               password,
               role,
             }
           : {
-              titlePrefix: String(formData.get("titlePrefix") ?? "").trim(),
-              firstName: String(formData.get("firstName") ?? "").trim(),
-              lastName: String(formData.get("lastName") ?? "").trim(),
-              email: String(formData.get("email") ?? "").trim(),
-              phone: String(formData.get("phone") ?? "").trim(),
-              gender: String(formData.get("gender") ?? ""),
-              birthDate: String(formData.get("birthDate") ?? ""),
+              name: String(formData.get("fullName") ?? "").trim(),
+              email: String(formData.get("email") ?? "").trim().toLowerCase(),
               password,
-              role,
+              role: "ELDERLY" as const,
             };
 
         const response = await fetch("/api/register", {
@@ -149,10 +148,7 @@ export function RegisterForm({
         const result = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(
-            collectErrorMessage(result?.error) ||
-              "สมัครสมาชิกไม่สำเร็จ กรุณาตรวจสอบข้อมูลอีกครั้ง",
-          );
+          throw new Error(collectErrorMessage(result?.error));
         }
 
         if (autoSignIn) {
@@ -161,10 +157,13 @@ export function RegisterForm({
             password,
             portal: "USER",
             redirect: false,
+            callbackUrl,
           });
 
           if (loginResult?.error) {
-            throw new Error("สร้างบัญชีสำเร็จ แต่เข้าสู่ระบบอัตโนมัติไม่สำเร็จ");
+            setMessage("สมัครสำเร็จแล้ว กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่านอีกครั้ง");
+            router.push("/login");
+            return;
           }
 
           form.reset();
@@ -183,35 +182,47 @@ export function RegisterForm({
         setError(
           submitError instanceof Error
             ? submitError.message
-            : "สมัครสมาชิกไม่สำเร็จ",
+            : "สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
         );
       }
     });
   }
 
   return (
-    <Card className={`w-full max-w-[42rem] space-y-6 ${className}`}>
-      <div className="space-y-2">
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </div>
+    <Card className={`w-full rounded-[2rem] p-5 sm:p-6 md:p-7 ${className}`}>
+      <header className="space-y-2">
+        <CardTitle className="text-[1.95rem] sm:text-[2.1rem]">{title}</CardTitle>
+        <CardDescription className="text-base leading-7">{description}</CardDescription>
+      </header>
 
-      <form className="space-y-5" onSubmit={handleSubmit}>
+      <section className="mt-5 rounded-[1.45rem] border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5">
+        <h2 className="text-lg font-bold text-slate-900">สมัครแล้วจะเกิดอะไรต่อ?</h2>
+        <ol className="mt-2 space-y-2 text-sm leading-7 text-slate-700">
+          <li>1. ระบบสร้างบัญชีและเข้าสู่ระบบให้อัตโนมัติ</li>
+          <li>2. พาไปหน้ากรอกข้อมูลทั่วไปเพื่อเตรียมใช้งานแอป</li>
+          <li>3. จากนั้นเริ่มบันทึกความดัน รูปยา และติดต่อนัดหมายได้ทันที</li>
+        </ol>
+      </section>
+
+      <form className="mt-5 space-y-5" onSubmit={handleSubmit} noValidate>
         {isManagedMode ? (
           <div className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">ชื่อที่ใช้แสดง</span>
+              <div className="space-y-2">
+                <label htmlFor={fullNameId} className="block text-base font-bold text-slate-700">
+                  ชื่อที่แสดง
+                </label>
                 <Input
+                  id={fullNameId}
                   name="name"
                   placeholder="เช่น นพ.สมชาย ใจดี"
                   required
                   autoComplete="name"
                 />
-              </label>
+              </div>
 
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">บทบาท</span>
+              <div className="space-y-2">
+                <label className="block text-base font-bold text-slate-700">บทบาท</label>
                 <Select
                   name="role"
                   value={role}
@@ -224,111 +235,67 @@ export function RegisterForm({
                     </option>
                   ))}
                 </Select>
-              </label>
+              </div>
             </div>
 
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">อีเมล</span>
+            <div className="space-y-2">
+              <label htmlFor={emailId} className="block text-base font-bold text-slate-700">
+                อีเมล
+              </label>
               <Input
+                id={emailId}
                 type="email"
                 name="email"
                 placeholder="name@example.com"
                 required
                 autoComplete="email"
               />
-            </label>
+            </div>
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50/80 p-4">
-              <p className="text-sm font-semibold text-emerald-900">
-                ข้อมูลนี้จะใช้สร้างแฟ้มสุขภาพส่วนตัวของผู้สูงอายุ
-              </p>
-              <p className="mt-2 text-sm leading-6 text-emerald-900/75">
-                กรอกชื่อจริง เบอร์มือถือ และวันเกิดให้ครบ เพื่อให้คุณหมอและระบบติดตามสุขภาพแสดงข้อมูลได้ถูกต้อง
-              </p>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">คำนำหน้า</span>
-                <Select name="titlePrefix" defaultValue={prefixOptions[0]} required>
-                  {prefixOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </Select>
+            <div className="space-y-2">
+              <label htmlFor={fullNameId} className="block text-base font-bold text-slate-700">
+                ชื่อ-นามสกุล
               </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">เพศ</span>
-                <Select name="gender" defaultValue="FEMALE" required>
-                  <option value="MALE">ชาย</option>
-                  <option value="FEMALE">หญิง</option>
-                  <option value="OTHER">ไม่ระบุ / อื่น ๆ</option>
-                </Select>
-              </label>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">ชื่อ</span>
-                <Input
-                  name="firstName"
-                  placeholder="เช่น สมใจ"
-                  required
-                  autoComplete="given-name"
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">นามสกุล</span>
-                <Input
-                  name="lastName"
-                  placeholder="เช่น ใจดี"
-                  required
-                  autoComplete="family-name"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">เบอร์มือถือ</span>
-                <Input
-                  type="tel"
-                  name="phone"
-                  placeholder="0812345678"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  required
-                />
-              </label>
-
-              <label className="space-y-2">
-                <span className="text-sm font-semibold text-slate-700">วันเกิด</span>
-                <Input type="date" name="birthDate" required />
-              </label>
-            </div>
-
-            <label className="space-y-2">
-              <span className="text-sm font-semibold text-slate-700">อีเมล</span>
               <Input
+                id={fullNameId}
+                name="fullName"
+                placeholder="เช่น สมใจ ใจดี"
+                required
+                autoComplete="name"
+              />
+              <p className="text-sm text-slate-500">
+                ใช้ชื่อจริงเพื่อให้ระบบและคุณหมอแสดงข้อมูลได้ถูกต้อง
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor={emailId} className="block text-base font-bold text-slate-700">
+                อีเมล
+              </label>
+              <Input
+                id={emailId}
                 type="email"
                 name="email"
                 placeholder="name@example.com"
                 required
                 autoComplete="email"
               />
-            </label>
+              <p className="text-sm text-slate-500">
+                ใช้อีเมลนี้สำหรับเข้าสู่ระบบในครั้งถัดไป
+              </p>
+            </div>
           </div>
         )}
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">รหัสผ่าน</span>
+          <div className="space-y-2">
+            <label htmlFor={passwordId} className="block text-base font-bold text-slate-700">
+              รหัสผ่าน
+            </label>
             <Input
+              id={passwordId}
               type="password"
               name="password"
               placeholder="ตั้งรหัสผ่านที่ปลอดภัย"
@@ -336,12 +303,19 @@ export function RegisterForm({
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
+              aria-describedby={passwordGuideId}
             />
-          </label>
+          </div>
 
-          <label className="space-y-2">
-            <span className="text-sm font-semibold text-slate-700">ยืนยันรหัสผ่าน</span>
+          <div className="space-y-2">
+            <label
+              htmlFor={confirmPasswordId}
+              className="block text-base font-bold text-slate-700"
+            >
+              ยืนยันรหัสผ่าน
+            </label>
             <Input
+              id={confirmPasswordId}
               type="password"
               name="confirmPassword"
               placeholder="พิมพ์รหัสผ่านอีกครั้ง"
@@ -350,14 +324,17 @@ export function RegisterForm({
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
             />
-          </label>
+          </div>
         </div>
 
-        <div className="rounded-[1.4rem] border border-slate-200 bg-slate-50/80 p-4">
-          <p className="text-sm font-semibold text-slate-900">ตั้งรหัสผ่านให้ปลอดภัย</p>
+        <div
+          id={passwordGuideId}
+          className="rounded-[1.2rem] border border-slate-200 bg-slate-50/85 p-4"
+        >
+          <p className="text-sm font-bold text-slate-900">ตรวจสอบความปลอดภัยของรหัสผ่าน</p>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {passwordChecks.map((item) => (
-              <div
+              <p
                 key={item.label}
                 className={`rounded-xl border px-3 py-2 text-sm ${
                   item.passed
@@ -366,43 +343,68 @@ export function RegisterForm({
                 }`}
               >
                 {item.label}
-              </div>
+              </p>
             ))}
           </div>
         </div>
 
-        {error ? (
-          <div className="rounded-[1.2rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-            {error}
+        {!isManagedMode ? (
+          <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4">
+            <label htmlFor={termsId} className="flex items-start gap-3">
+              <input
+                id={termsId}
+                name="acceptTerms"
+                type="checkbox"
+                required
+                className="mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-emerald-700 focus:ring-emerald-600"
+              />
+              <span className="text-sm leading-7 text-slate-700">
+                ข้าพเจ้ายอมรับเงื่อนไขการใช้งานและนโยบายความเป็นส่วนตัว เพื่อให้ระบบจัดเก็บข้อมูลสุขภาพสำหรับการใช้งานในแอปนี้
+              </span>
+            </label>
           </div>
+        ) : null}
+
+        {error ? (
+          <p
+            id={errorId}
+            role="alert"
+            className="rounded-[1rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-7 text-rose-700"
+          >
+            {error}
+          </p>
         ) : null}
 
         {message ? (
-          <div className="rounded-[1.2rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          <p
+            id={messageId}
+            role="status"
+            className="rounded-[1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-7 text-emerald-700"
+          >
             {message}
-          </div>
+          </p>
         ) : null}
 
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? "กำลังบันทึกข้อมูล..." : submitLabel}
+          {isPending ? "กำลังสร้างบัญชี..." : submitLabel}
         </Button>
       </form>
 
       {!isManagedMode ? (
-        <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/85 p-4">
-          <p className="text-sm font-semibold text-slate-900">มีบัญชีอยู่แล้วใช่ไหม?</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            หากเคยสมัครไว้แล้ว สามารถกลับไปเข้าสู่ระบบด้วยอีเมลเดิมเพื่อเริ่มบันทึกข้อมูลสุขภาพได้ทันที
+        <section className="mt-5 rounded-[1.45rem] border border-slate-200 bg-slate-50/85 p-4">
+          <h2 className="text-base font-bold text-slate-900">มีบัญชีอยู่แล้ว?</h2>
+          <p className="mt-1 text-sm leading-7 text-slate-600">
+            กลับไปหน้าเข้าสู่ระบบเพื่อใช้งานด้วยอีเมลและรหัสผ่านเดิมได้ทันที
           </p>
-          <div className="mt-4">
+          <div className="mt-3">
             <Link
               href="/login"
-              className="inline-flex min-h-[3rem] items-center justify-center rounded-[1.1rem] border border-emerald-200 px-4 py-3 text-sm font-bold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50"
+              className="inline-flex min-h-[2.9rem] items-center rounded-[1rem] border border-emerald-200 bg-white px-4 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
             >
               กลับไปหน้าเข้าสู่ระบบ
             </Link>
           </div>
-        </div>
+        </section>
       ) : null}
     </Card>
   );
